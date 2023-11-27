@@ -23,6 +23,7 @@ Admin utilities
     An Item that users can use to reset their skills\occupations
     Menu with a list of players, where admins can open a specific player dice menu.
 ]]
+local CommonUI = require("UI/DiceSystem_CommonUI")
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_SCALE = FONT_HGT_SMALL / 16
 
@@ -79,9 +80,6 @@ end
 function DiceMenu:getIsAdminMode()
      return self.isAdminMode
 end
-
-
-
 
 --- Fill the skill panel. The various buttons will be enabled ONLY for the actual player.
 function DiceMenu:fillSkillPanel()
@@ -281,36 +279,19 @@ function DiceMenu:createChildren()
     if isAdmin then
         playerName = "ADMIN MODE - " .. playerName
     end
-
-    self.labelPlayer = ISLabel:new((self.width - getTextManager():MeasureStringX(UIFont.Large, playerName)) / 2, yOffset,
-        25, playerName, 1, 1, 1, 1, UIFont.Large, true)
-    self.labelPlayer:initialise()
-    self.labelPlayer:instantiate()
-    self:addChild(self.labelPlayer)
-    yOffset = yOffset + 25 + 10
-
     local frameHeight = 40 * FONT_SCALE
 
+    --* Name Label *--
+    CommonUI.AddCenteredTextLabel(self, "labelPlayer", playerName, yOffset)
+    yOffset = yOffset + 25 + 10
+
+    --* Status Effects Panel *--
     local labelStatusEffectsHeight = 25 * (FONT_SCALE + 0.5)
-
-    self.labelStatusEffectsList = ISRichTextPanel:new(20, yOffset, self.width - 20, labelStatusEffectsHeight)
-    self.labelStatusEffectsList:initialise()
-    self:addChild(self.labelStatusEffectsList)
-
-    self.labelStatusEffectsList.marginTop = 0
-    self.labelStatusEffectsList.marginLeft = self.width/6
-    self.labelStatusEffectsList.marginRight = self.width/6
-    self.labelStatusEffectsList.autosetheight = false
-    self.labelStatusEffectsList.background = false
-    self.labelStatusEffectsList.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.labelStatusEffectsList.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.labelStatusEffectsList:paginate()
-
-
+    CommonUI.AddStatusEffectsPanel(self, labelStatusEffectsHeight, yOffset)
     yOffset = yOffset + labelStatusEffectsHeight + 25
 
     local xFrameMargin = 10 * FONT_SCALE
-    local comboBoxHeight = 25       -- TODO This should scale?
+    local comboBoxHeight = 25
     local marginPanelTop = (frameHeight/4)
 
     --* Occupation *--
