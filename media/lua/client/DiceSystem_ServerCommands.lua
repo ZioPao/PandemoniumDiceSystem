@@ -15,8 +15,11 @@ function ModDataServerCommands.ResetClientDiceData(args)
         ModData.request(DICE_SYSTEM_MOD_STRING)
     end
 
-    PlayerHandler.data = ModData.get(DICE_SYSTEM_MOD_STRING)
-    PlayerHandler.data[PlayerHandler.username] = nil
+    local username = getPlayer():getUsername()
+    local playerHandler = PlayerHandler:instantiate(username)
+
+    playerHandler.diceData = ModData.get(DICE_SYSTEM_MOD_STRING)
+    playerHandler.diceData[username] = nil
 
     -- Reset status effects local table
     StatusEffectsUI.UpdateLocalStatusEffectsTable(getPlayer():getOnlineID(), {})

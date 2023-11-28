@@ -1,508 +1,75 @@
+
+local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
+----------------------
+
+-- TODO Migrate to instantiating the Handler instead of having it a static class
+---@alias statusEffectsType {}
+---@alias skillsTabType {}
+---@alias skillsBonusTabType {}
+
+---@alias diceDataType {isInitialized : boolean, occupation : string, statusEffects : statusEffectsType, currentHealth : number, maxHealth : number, armorBonus : number, currentMovement : number, maxMovement : number, movementBonus : number, allocatedPoints : number, skills : skillsTabType, skillsBonus : skillsBonusTabType}
+
 -- Player data saved locally here
 DICE_CLIENT_MOD_DATA = {}
 
-local PlayerStatsHandler = {}
+---@class PlayerHandler
+---@field handlers table
+---@field username string
+---@field diceData diceDataType
+local PlayerHandler = {}
+PlayerHandler.handlers = {}
 
+---Instantiate a new Handler
+---@param username string
+---@return PlayerHandler
+function PlayerHandler:instantiate(username)
 
---------------------------------
---* Global mod data *--
-
-function OnConnected()
-    print("Requested global mod data")
-    ModData.request(DICE_SYSTEM_MOD_STRING)
-    DICE_CLIENT_MOD_DATA = ModData.get(DICE_SYSTEM_MOD_STRING)
-
-    if DICE_CLIENT_MOD_DATA == nil then
-        DICE_CLIENT_MOD_DATA = {}
-    else
-        print("Found DICE_SYSTEM global mod data, sent it to client")
-        print(DICE_CLIENT_MOD_DATA)
+    if PlayerHandler.handlers[username] then
+        return PlayerHandler.handlers[username]
     end
+
+    local o = {}
+    setmetatable(o, self)
+
+    o.username = username
+    o.diceData = DICE_CLIENT_MOD_DATA[username]
+
+    PlayerHandler.handlers[username] = o
+    return o
 end
 
-Events.OnConnected.Add(OnConnected)
+function PlayerHandler:checkDiceDataValidity()
+    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
+        self.diceData = DICE_CLIENT_MOD_DATA[self.username]
+        return true
+    end
 
-
-local function copyTable(tableA, tableB)
-    if not tableA or not tableB then
-        return
-    end
-    for key, value in pairs(tableB) do
-        tableA[key] = value
-    end
-    for key, _ in pairs(tableA) do
-        if not tableB[key] then
-            tableA[key] = nil
-        end
-    end
+    return false
 end
 
 
-
+--* Initialization *--
 
 ---This is a fairly aggressive way to sync the moddata table. Use it sparingly
----@param username any
+---@param username string
 local function SyncPlayerTable(username)
     sendClientCommand(getPlayer(), DICE_SYSTEM_MOD_STRING, "UpdatePlayerStats",
         { data = DICE_CLIENT_MOD_DATA[username], username = username })
 end
 
-local function ReceiveGlobalModData(key, data)
-    --print("Received global mod data")
-    if key == DICE_SYSTEM_MOD_STRING then
-        --Creating a deep copy of recieved data and storing it in local store CLIENT_GLOBALMODDATA table
-        copyTable(DICE_CLIENT_MOD_DATA, data)
-    end
-
-    --Update global mod data with local table (from global_mod_data.bin)
-    ModData.add(DICE_SYSTEM_MOD_STRING, DICE_CLIENT_MOD_DATA)
-end
-
-Events.OnReceiveGlobalModData.Add(ReceiveGlobalModData)
-
---------------------------------
-
-
-
---*  Skills handling *--
-
-PlayerStatsHandler.GetFullSkillPoints = function(skill)
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    local points = diceData.skills[skill]
-    local bonusPoints = diceData.skillsBonus[skill]
-
-    -- TODO We must account better for this kind of stuff
-    if skill == "Resolve" then
-        bonusPoints = bonusPoints + diceData.armorBonus
-    end
-
-    return points + bonusPoints
-end
-
----Get the amount of points for a specific skill.
----@param skill string
----@return number
-PlayerStatsHandler.GetSkillPoints = function(skill)
-    --print("DiceSystem: playerHandler searching for skill " .. skill)
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
-        return -1
-    end
-
-    local points = diceData.skills[skill]
-    if points ~= nil then
-        return points
-    else
-        return -1
-    end
-end
-
-PlayerStatsHandler.HandleSkillPoint = function(skill, operation)
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    local result = false
-
-    if operation == "+" then
-        result = PlayerStatsHandler.IncrementSkillPoint(diceData, skill)
-    elseif operation == "-" then
-        result = PlayerStatsHandler.DecrementSkillPoint(diceData, skill)
-    end
-
-    -- In case of failure, just return.
-    if not result then return end
-
-    --* Special cases
-
-    -- Movement Bonus scales in Deft
-    if skill == 'Deft' then
-        local actualPoints = PlayerStatsHandler.GetSkillPoints(skill)
-        local bonusPoints = PlayerStatsHandler.GetBonusSkillPoints(skill)
-        PlayerStatsHandler.ApplyMovementBonus(actualPoints, bonusPoints)
-    end
-
-    -- DO NOT SYNC THIS!
-    -- Sync it, even when it's not initialized, to prevent issues when other players
-    -- send an updated mod data and our local player hasn't been initialized yet
-   -- statsTable[PlayerStatsHandler.username].
-    --sendClientCommand(DICE_SYSTEM_MOD_STRING, '')
-    --SyncTable(PlayerStatsHandler.username)
-
-    return result
-end
-
-
----Increment a specific skillpoint
----@param diceData table
----@param skill string
----@return boolean
-PlayerStatsHandler.IncrementSkillPoint = function(diceData, skill)
-    local result = false
-
-    if diceData.allocatedPoints < 20 and diceData.skills[skill] < 5 then
-        diceData.skills[skill] = diceData.skills[skill] + 1
-        diceData.allocatedPoints = diceData.allocatedPoints + 1
-        result = true
-    end
-
-    return result
-end
-
----Decrement a specific skillpoint
----@param diceData table
----@param skill string
----@return boolean
-PlayerStatsHandler.DecrementSkillPoint = function(diceData, skill)
-    local result = false
-    if diceData.skills[skill] > 0 then
-        diceData.skills[skill] = diceData.skills[skill] - 1
-        diceData.allocatedPoints = diceData.allocatedPoints - 1
-        result = true
-    end
-
-    return result
-end
-
-PlayerStatsHandler.GetBonusSkillPoints = function(skill)
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
-        return -1
-    end
-
-    local points = diceData.skillsBonus[skill]
-    if points ~= nil then
-        return points
-    else
-        return -1
-    end
-end
-
-PlayerStatsHandler.GetAllocatedSkillPoints = function()
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-
-    if diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
-        return -1
-    end
-
-    local allocatedPoints = diceData.allocatedPoints
-    if allocatedPoints ~= nil then return allocatedPoints else return -1 end
-end
-
---* Occupations *--
-
----Returns the player's occupation
----@return string
-PlayerStatsHandler.GetOccupation = function()
-    -- This is used in the prerender for our special combobox. We'll add a bit of added logic to be sure that it doesn't break
-    if DICE_CLIENT_MOD_DATA and PlayerStatsHandler.username and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].occupation
-    end
-
-    return ""
-end
-
----Set an occupation and its related bonuses
----@param occupation string
-PlayerStatsHandler.SetOccupation = function(occupation)
-    --print("Setting occupation")
-    --print(PlayerStatsHandler.username)
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData == nil then return end
-
-    --print("Setting occupation => " .. occupation)
-    diceData.occupation = occupation
-    local bonusData = PLAYER_DICE_VALUES.OCCUPATIONS_BONUS[occupation]
-
-    -- Reset diceData.skillBonus
-    for k, v in pairs(diceData.skillsBonus) do
-        diceData.skillsBonus[k] = 0
-    end
-
-    for key, bonus in pairs(bonusData) do
-        diceData.skillsBonus[key] = bonus
-    end
-end
-
---* Status Effect *--
-PlayerStatsHandler.ToggleStatusEffectValue = function(statusEffect)
-    -- Add a check in the UI to make it clear that we have selected them or something
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData.statusEffects[statusEffect] ~= nil then
-        diceData.statusEffects[statusEffect] = not diceData.statusEffects[statusEffect]
-    end
-
-    -- We need to force set an update since this is gonna be visible to all players!
-    local isActive = diceData.statusEffects[statusEffect]
-    local pl = getPlayerFromUsername(PlayerStatsHandler.username)
-    local userID = nil
-    if pl then
-        userID = pl:getOnlineID()
-    end
-
-    sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateStatusEffect', {username = PlayerStatsHandler.username, userID = userID, statusEffect = statusEffect, isActive = isActive })
-    --SyncPlayerTable(PlayerStatsHandler.username)
-    
-    --print("Setting occupation => " .. occupation)
-end
-
-PlayerStatsHandler.GetStatusEffectValue = function(status)
-    local val = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].statusEffects[status]
-    --print("Status: " .. status .. ",value: " .. tostring(val))
-    return val
-end
-
--- -- TODO This should be deleted and we should use GetActiveStatusEffectsByUsername
--- ---Returns the currently active status effects 
--- ---@return table
--- PlayerStatsHandler.GetActiveStatusEffects = function()
---     local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
---     local statusEffects = diceData.statusEffects
---     local list = {}
---     for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
---         local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
---         if statusEffects[x] ~= nil and statusEffects[x] == true then
---             table.insert(list, x)
---         end
---     end
-
---     return list
--- end
-
----Get a certain player active status effects from the cache
----@return table
-PlayerStatsHandler.GetActiveStatusEffectsByUsername = function(username)
-    local pl = getPlayerFromUsername(username)
-
-    if pl then
-        local plID = pl:getOnlineID()
-        local effectsTable = StatusEffectsUI.nearPlayersStatusEffects[plID]
-        if effectsTable == nil then return {} else return effectsTable end
-    end
-
-    return {}
-end
-
-
---* Health *--
-PlayerStatsHandler.GetCurrentHealth = function()
-    if DICE_CLIENT_MOD_DATA and PlayerStatsHandler.username and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].currentHealth
-    end
-
-    return -1
-end
-
-PlayerStatsHandler.GetMaxHealth = function()
-    if DICE_CLIENT_MOD_DATA and PlayerStatsHandler.username and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].maxHealth
-    end
-
-    return -1
-end
-
-PlayerStatsHandler.HandleCurrentHealth = function(operation)
-    local result = false
-    if operation == "+" then
-        result = PlayerStatsHandler.IncrementCurrentHealth()
-    elseif operation == "-" then
-        result = PlayerStatsHandler.DecrementCurrentHealth()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].isInitialized then
-        local currentHealth = PlayerStatsHandler.GetCurrentHealth()
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth', {currentHealth = currentHealth, username = PlayerStatsHandler.username})
-    end
-end
-
-
-PlayerStatsHandler.IncrementCurrentHealth = function()
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData.currentHealth < diceData.maxHealth then
-        diceData.currentHealth = diceData.currentHealth + 1
-        return true
-    end
-
-    return false
-end
-
-PlayerStatsHandler.DecrementCurrentHealth = function()
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData.currentHealth > 0 then
-        diceData.currentHealth = diceData.currentHealth - 1
-        return true
-    end
-
-    return false
-end
-
---* Movement *--
-
-PlayerStatsHandler.HandleCurrentMovement = function(operation)
-    local result = false
-    if operation == "+" then
-        result = PlayerStatsHandler.IncrementCurrentMovement()
-    elseif operation == "-" then
-        result = PlayerStatsHandler.DecrementCurrentMovement()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].isInitialized then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement', {currentMovement = PlayerStatsHandler.GetCurrentMovement(), username = PlayerStatsHandler.username})
-    end
-end
-
-PlayerStatsHandler.IncrementCurrentMovement = function()
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData.currentMovement < diceData.maxMovement + diceData.movementBonus then
-        diceData.currentMovement = diceData.currentMovement + 1
-        return true
-    end
-
-    return false
-end
-
-PlayerStatsHandler.DecrementCurrentMovement = function()
-    local diceData = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username]
-    if diceData.currentMovement > 0 then
-        diceData.currentMovement = diceData.currentMovement - 1
-        return true
-    end
-    return false
-end
-
----Returns current movmenet
----@return number
-PlayerStatsHandler.GetCurrentMovement = function()
-    if DICE_CLIENT_MOD_DATA and PlayerStatsHandler.username and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].currentMovement
-    end
-
-    return -1
-end
-
-PlayerStatsHandler.SetCurrentMovement = function(movement)
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].currentMovement = movement
-end
-
----Returns the max movement value
----@return number
-PlayerStatsHandler.GetMaxMovement = function()
-    if DICE_CLIENT_MOD_DATA and PlayerStatsHandler.username and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].maxMovement
-    end
-
-    return -1
-end
-
-PlayerStatsHandler.ApplyMovementBonus = function(deftPoints, deftBonusPoints)
-    local movBonus = math.floor((deftPoints + deftBonusPoints) / 2)
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].movementBonus = movBonus
-end
-
-PlayerStatsHandler.SetMovementBonus = function(deftPoints)
-    local addedBonus = math.floor(deftPoints / 2)
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].movementBonus = addedBonus
-end
-
-PlayerStatsHandler.GetMovementBonus = function()
-    if DICE_CLIENT_MOD_DATA and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].movementBonus
-    end
-
-    return -1
-end
-
-local function AdjustCurrentMovement()
-    local maxMov = PlayerStatsHandler.GetMaxMovement()
-    local movBonus = PlayerStatsHandler.GetMovementBonus()
-
-    if PlayerStatsHandler.GetCurrentMovement() > maxMov + movBonus then
-        DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].currentMovement = maxMov + movBonus
-    end
-end
-
-
-PlayerStatsHandler.SetMaxMovement = function(maxMov)
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].maxMovement = maxMov
-    AdjustCurrentMovement()
-end
-
--- * Armor Bonus
----Check the armor bonus for a certain player
----@param pl IsoPlayer
----@return boolean
-PlayerStatsHandler.CalculateArmorBonus = function(pl)
-    -- !!! This could be run on any client.
-    if pl == nil then return false end
-    if pl ~= getPlayer() then return false end
-
-
-    if DICE_CLIENT_MOD_DATA == nil or DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] == nil then return false end
-
-    --getBulletDefense()
-    local wornItems = pl:getWornItems()
-    local tempProtection = 0
-    for i = 1, wornItems:size() do
-        local item = wornItems:get(i - 1):getItem()
-        if instanceof(item, "Clothing") then
-            tempProtection = tempProtection + item:getBulletDefense()
-        end
-    end
-
-    ---------------------------
-    --print(tempProtection)
-    --------------------------
-
-
-    local scaledProtection = math.floor(tempProtection / 100)
-    --print(scaledProtection)
-    if scaledProtection < 0 then scaledProtection = 0 end
-
-    -- TODO Cache old armor bonus before updating it
-
-    -- Set the correct amount of armor bonus
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].armorBonus = scaledProtection
-
-    -- We need to scale the movement accordingly
-    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - scaledProtection
-    PlayerStatsHandler.SetMaxMovement(maxMov)
-
-    -- TODO Cache old max movement before updating it
-    if PlayerStatsHandler.IsPlayerInitialized() then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', {armorBonus = scaledProtection, username = PlayerStatsHandler.username})
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', {maxMovement = maxMov, username = PlayerStatsHandler.username})    
-    end
-
-    return true
-end
-
---- Returns the current value of armor bonus
----@return number
-PlayerStatsHandler.GetArmorBonus = function()
-    if DICE_CLIENT_MOD_DATA and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] then
-        return DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].armorBonus
-    end
-
-    return -1
-end
-
-
--- * Initialization
 
 --- Creates a new ModData for a player
 ---@param force boolean Force initializiation for the current player
-PlayerStatsHandler.InitModData = function(force)
+function PlayerHandler:initModData(force)
 
     --print("[DiceSystem] Initializing!")
-
-
-
-    if PlayerStatsHandler.username == nil then
-        PlayerStatsHandler.username = getPlayer():getUsername()
+    if self.username == nil then
+        self.username = getPlayer():getUsername()
     end
     -- This should happen only from that specific player, not an admin
-    if (DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] == nil) or force then
+    if (DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[self.username] == nil) or force then
         --print("[DiceSystem] Initializing new player dice data")
+        ---@type diceDataType
         local tempTable = {}
         tempTable = {
             isInitialized = false,
@@ -511,7 +78,6 @@ PlayerStatsHandler.InitModData = function(force)
 
             currentHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
             maxHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
-
             armorBonus = 0,
 
             currentMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
@@ -538,40 +104,38 @@ PlayerStatsHandler.InitModData = function(force)
         end
 
 
-        --PlayerStatsHandler.CalculateArmorBonus(getPlayer())
+        --PlayerStatsHandler.CalcualteArmorClass(getPlayer())
 
-        DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] = {}
-        copyTable(DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username], tempTable)
+        DICE_CLIENT_MOD_DATA[self.username] = {}
+        copyTable(DICE_CLIENT_MOD_DATA[self.username], tempTable)
 
         -- Sync it now
-        SyncPlayerTable(PlayerStatsHandler.username)
+        SyncPlayerTable(self.username)
         print("DiceSystem: initialized player")
-    
-    elseif DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] == nil then
+    elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")
     end
 end
 
 ---Set if player has finished their setup via the UI
 ---@param isInitialized boolean
-PlayerStatsHandler.SetIsInitialized = function(isInitialized)
+function PlayerHandler:setIsInitialized(isInitialized)
     -- Syncs it with server
-    DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].isInitialized = isInitialized
+    DICE_CLIENT_MOD_DATA[self.username].isInitialized = isInitialized
 
     -- Maybe the unique case where this is valid
     if isInitialized then
-        SyncPlayerTable(PlayerStatsHandler.username)
+        SyncPlayerTable(self.username)
     end
 end
 
-PlayerStatsHandler.IsPlayerInitialized = function()
-    if DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] == nil then
+function PlayerHandler:isPlayerInitialized()
+    if DICE_CLIENT_MOD_DATA[self.username] == nil then
         --error("Couldn't find player dice data!")
         return
     end
 
-
-    local isInit = DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].isInitialized
+    local isInit = DICE_CLIENT_MOD_DATA[self.username].isInitialized
 
     if isInit == nil then
         return false
@@ -580,35 +144,467 @@ PlayerStatsHandler.IsPlayerInitialized = function()
     return isInit
 end
 
---* Admin functions *--
 
----Start cleaning process for a specific user
----@param userID number
-PlayerStatsHandler.CleanModData = function(userID, username)
-    sendClientCommand(DICE_SYSTEM_MOD_STRING, "ResetServerDiceData", { userID = userID, username = username })
+--*  Skills handling *--
 
-    --statsTable[username] = nil
-    --SyncTable(username)
+---Return skill points + bonus skill points
+---@param skill string
+---@return number
+function PlayerHandler:getFullSkillPoints(skill)
+    local points = self.diceData.skills[skill]
+    local bonusPoints = self.diceData.skillsBonus[skill]
+
+    return points + bonusPoints
 end
 
-PlayerStatsHandler.SetUser = function(user)
-    PlayerStatsHandler.username = user
-end
+---Get the amount of points for a specific skill.
+---@param skill string
+---@return number
+function PlayerHandler:getSkillPoints(skill)
+    if self.diceData == nil then
+        --print("DiceSystem: modData is nil, can't return skill point value")
+        return -1
+    end
 
----Check if player is initialized and ready to use the system
----@param username any
----@return boolean
-PlayerStatsHandler.CheckInitializedStatus = function(username)
-    if DICE_CLIENT_MOD_DATA[username] then
-        return DICE_CLIENT_MOD_DATA[username].isInitialized
+    local points = self.diceData.skills[skill]
+    if points ~= nil then
+        return points
     else
-        return false
+        return -1
     end
 end
----------------
 
--- Various events handling
-Events.OnGameStart.Add(PlayerStatsHandler.InitModData)
-Events.OnClothingUpdated.Add(PlayerStatsHandler.CalculateArmorBonus)
+---Get the amount of bonus points for a specific skill.
+---@param skill string
+---@return number
+function PlayerHandler:getBonusSkillPoints(skill)
+    if self.diceData == nil then
+        --print("DiceSystem: modData is nil, can't return skill point value")
+        return -1
+    end
 
-return PlayerStatsHandler
+    local points = self.diceData.skillsBonus[skill]
+    if points ~= nil then
+        return points
+    else
+        return -1
+    end
+end
+
+---Increment a specific skillpoint
+---@param skill string
+---@return boolean
+function PlayerHandler:incrementSkillPoint(skill)
+    local result = false
+    if self.diceData.allocatedPoints < 20 and self.diceData.skills[skill] < 5 then
+        self.diceData.skills[skill] = self.diceData.skills[skill] + 1
+        self.diceData.allocatedPoints = self.diceData.allocatedPoints + 1
+        result = true
+    end
+
+    return result
+end
+
+---Decrement a specific skillpoint
+---@param skill string
+---@return boolean
+function PlayerHandler:decrementSkillPoint(skill)
+    local result = false
+    if self.diceData.skills[skill] > 0 then
+        self.diceData.skills[skill] = self.diceData.skills[skill] - 1
+        self.diceData.allocatedPoints = self.diceData.allocatedPoints - 1
+        result = true
+    end
+
+    return result
+end
+
+---Add or subtract to any skill point for this user
+---@param skill any
+---@param operation any
+---@return boolean
+function PlayerHandler:handleSkillPoint(skill, operation)
+    local result = false
+
+    if operation == "+" then
+        result = self:incrementSkillPoint(skill)
+    elseif operation == "-" then
+        result = self:decrementSkillPoint(skill)
+    end
+
+    -- In case of failure, just return.
+    if not result then return false end
+
+    --* Special cases
+
+    -- Movement Bonus scales in Deft
+    if skill == 'Deft' then
+        local actualPoints = self:getSkillPoints(skill)
+        local bonusPoints = self:getBonusSkillPoints(skill)
+        self:applyMovementBonus(actualPoints, bonusPoints)
+    end
+    return result
+end
+
+---Get Allocated Skill points
+---@return integer
+function PlayerHandler:getAllocatedSkillPoints()
+    if self.diceData == nil then
+        --print("DiceSystem: modData is nil, can't return skill point value")
+        return -1
+    end
+
+    local allocatedPoints = self.diceData.allocatedPoints
+    if allocatedPoints ~= nil then return allocatedPoints else return -1 end
+end
+
+--* Occupations *--
+
+---Returns the player's occupation
+---@return string
+function PlayerHandler:getOccupation()
+    -- This is used in the prerender for our special combobox. We'll add a bit of added logic to be sure that it doesn't break
+    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
+        return DICE_CLIENT_MOD_DATA[self.username].occupation
+    end
+
+    return ""
+end
+
+---Set an occupation and its related bonuses
+---@param occupation string
+function PlayerHandler:setOccupation(occupation)
+    --print("Setting occupation")
+    --print(PlayerStatsHandler.username)
+    if self.diceData == nil then return end
+
+    --print("Setting occupation => " .. occupation)
+    self.diceData.occupation = occupation
+    local bonusData = PLAYER_DICE_VALUES.OCCUPATIONS_BONUS[occupation]
+
+    -- Reset diceData.skillBonus
+    for k, _ in pairs(self.diceData.skillsBonus) do
+        self.diceData.skillsBonus[k] = 0
+    end
+
+    for key, bonus in pairs(bonusData) do
+        self.diceData.skillsBonus[key] = bonus
+    end
+end
+
+--* Status Effects *--
+
+---comment
+---@param statusEffect string
+function PlayerHandler:toggleStatusEffectValue(statusEffect)
+    -- Add a check in the UI to make it clear that we have selected them or something
+    if self.diceData.statusEffects[statusEffect] ~= nil then
+        self.diceData.statusEffects[statusEffect] = not self.diceData.statusEffects[statusEffect]
+    end
+
+    -- We need to force set an update since this is gonna be visible to all players!
+    local isActive = self.diceData.statusEffects[statusEffect]
+    local pl = getPlayerFromUsername(self.username)
+    local userID = nil
+    if pl then
+        userID = pl:getOnlineID()
+    end
+
+    sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateStatusEffect', {username = self.username, userID = userID, statusEffect = statusEffect, isActive = isActive })
+end
+
+---Get the status effect value
+---@param status string
+---@return boolean
+function PlayerHandler:getStatusEffectValue(status)
+    local val = DICE_CLIENT_MOD_DATA[self.username].statusEffects[status]
+    --print("Status: " .. status .. ",value: " .. tostring(val))
+    return val
+end
+
+
+--* Health *--
+
+---Returns current health
+---@return number
+function PlayerHandler:getCurrentHealth()
+    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
+        return DICE_CLIENT_MOD_DATA[self.username].currentHealth
+    end
+
+    return -1
+end
+
+---Returns max health
+---@return number
+function PlayerHandler:getMaxHealth()
+    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
+        return DICE_CLIENT_MOD_DATA[self.username].maxHealth
+    end
+
+    return -1
+end
+
+---Increments the current health
+---@return boolean
+function PlayerHandler:incrementCurrentHealth()
+    if self.diceData.currentHealth < self.diceData.maxHealth then
+        self.diceData.currentHealth = self.diceData.currentHealth + 1
+        return true
+    end
+
+    return false
+end
+
+---Decrement the health
+---@return boolean
+function PlayerHandler:decrementCurrentHealth()
+    if self.diceData.currentHealth > 0 then
+        self.diceData.currentHealth = self.diceData.currentHealth - 1
+        return true
+    end
+
+    return false
+end
+
+---Modifies current health
+---@param operation char
+function PlayerHandler:handleCurrentHealth(operation)
+    local result = false
+    if operation == "+" then
+        result = self:incrementCurrentHealth()
+    elseif operation == "-" then
+        result = self:decrementCurrentHealth()
+    end
+
+    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
+        local currentHealth = self:getCurrentHealth()
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth', {currentHealth = currentHealth, username = self.username})
+    end
+end
+
+--* Movement *--
+
+
+function PlayerHandler:incrementCurrentMovement()
+    if self.diceData.currentMovement < self.diceData.maxMovement + self.diceData.movementBonus then
+        self.diceData.currentMovement = self.diceData.currentMovement + 1
+        return true
+    end
+
+    return false
+end
+
+function PlayerHandler:decrementCurrentMovement()
+    if self.diceData.currentMovement > 0 then
+        self.diceData.currentMovement = self.diceData.currentMovement - 1
+        return true
+    end
+    return false
+end
+
+function PlayerHandler:handleCurrentMovement(operation)
+    local result = false
+    if operation == "+" then
+        result = self:incrementCurrentMovement()
+    elseif operation == "-" then
+        result = self:decrementCurrentMovement()
+    end
+
+    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement', {currentMovement = self:getCurrentMovement(), username = self.username})
+    end
+end
+
+---Returns current movmenet
+---@return number
+function PlayerHandler:getCurrentMovement()
+    if self:checkDiceDataValidity() then
+        return DICE_CLIENT_MOD_DATA[self.username].currentMovement
+    end
+
+    return -1
+end
+
+function PlayerHandler:setCurrentMovement(movement)
+    DICE_CLIENT_MOD_DATA[self.username].currentMovement = movement
+end
+
+---Returns the max movement value
+---@return number
+function PlayerHandler:getMaxMovement()
+    if self:checkDiceDataValidity() then
+        return DICE_CLIENT_MOD_DATA[self.username].maxMovement
+    end
+
+    return -1
+end
+
+---Set the correct Movement Bonus to the player data
+---@param deftPoints number
+---@param deftBonusPoints number
+function PlayerHandler:applyMovementBonus(deftPoints, deftBonusPoints)
+    local movBonus = math.floor((deftPoints + deftBonusPoints) / 2)
+    DICE_CLIENT_MOD_DATA[self.username].movementBonus = movBonus
+end
+
+---Get the movement bonus
+---@return number
+function PlayerHandler:getMovementBonus()
+    if self:checkDiceDataValidity() then
+        return DICE_CLIENT_MOD_DATA[self.username].movementBonus
+    end
+
+    return -1
+end
+
+---Set the new correct max movement
+---@param maxMov number
+function PlayerHandler:setMaxMovement(maxMov)
+    DICE_CLIENT_MOD_DATA[self.username].maxMovement = maxMov
+    local movBonus = self:getMovementBonus()
+
+    if self:getCurrentMovement() > maxMov + movBonus then
+        DICE_CLIENT_MOD_DATA[self.username].currentMovement = maxMov + movBonus
+    end
+end
+
+--* Armor Bonus
+
+--- Returns the current value of armor bonus
+---@return number
+function PlayerHandler:getArmorBonus()
+    if DICE_CLIENT_MOD_DATA and DICE_CLIENT_MOD_DATA[self.username] then
+        return DICE_CLIENT_MOD_DATA[self.username].armorBonus
+    end
+
+    return -1
+end
+
+-----------------------
+--* Static functions *--
+
+---Get a certain player active status effects from the cache
+---@param username string
+---@return table
+function PlayerHandler.GetActiveStatusEffectsByUsername(username)
+    local pl = getPlayerFromUsername(username)
+
+    if pl then
+        local plID = pl:getOnlineID()
+        local effectsTable = StatusEffectsHandler.nearPlayersStatusEffects[plID]
+        if effectsTable == nil then return {} else return effectsTable end
+    end
+
+    return {}
+end
+
+---Start cleaning process for a specific user. ADMIN ONLY!
+---@param userID number
+---@param username string
+function PlayerHandler.CleanModData(userID, username)
+    sendClientCommand(DICE_SYSTEM_MOD_STRING, "ResetServerDiceData", { userID = userID, username = username })
+end
+
+
+---Calculate the current armor bonus. Must be run ONLY on that specific client!
+---@param pl IsoPlayer local player
+---@return boolean
+function PlayerHandler.CalculateArmorBonus(pl)
+    --!!! This could be run on any client.
+    if pl == nil then return false end
+    if pl ~= getPlayer() then return false end
+    local username = getPlayer():getUsername()
+    local handler = PlayerHandler:instantiate(username)
+
+
+    if DICE_CLIENT_MOD_DATA == nil or DICE_CLIENT_MOD_DATA[username] == nil then return false end
+    local wornItems = pl:getWornItems()
+    local tempProtection = 0
+    for i = 1, wornItems:size() do
+        local item = wornItems:get(i - 1):getItem()
+        if instanceof(item, "Clothing") then
+            tempProtection = tempProtection + item:getBulletDefense()
+        end
+    end
+    local scaledProtection = math.floor(tempProtection / 100)
+    --print(scaledProtection)
+    if scaledProtection < 0 then scaledProtection = 0 end
+
+    -- TODO Cache old armor bonus before updating it
+
+    -- Set the correct amount of armor bonus
+    DICE_CLIENT_MOD_DATA[username].armorBonus = scaledProtection
+
+    -- We need to scale the movement accordingly
+    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - scaledProtection
+    handler:setMaxMovement(maxMov)
+
+    -- TODO Cache old max movement before updating it
+    if handler:isPlayerInitialized() then
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', {armorBonus = scaledProtection, username = username})
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', {maxMovement = maxMov, username = username})
+    end
+
+    return true
+
+end
+
+
+------------------------
+--* Various events handling
+Events.OnGameStart.Add(function()
+    local handler = PlayerHandler:instantiate(getPlayer():getUsername())
+    handler:initModData(false)
+end)
+Events.OnClothingUpdated.Add(PlayerHandler.CalculateArmorBonus)
+
+
+
+--------------------------------
+--* Global mod data *--
+
+---Ask ModData from server
+function OnConnected()
+    print("Requested global mod data")
+    ModData.request(DICE_SYSTEM_MOD_STRING)
+    DICE_CLIENT_MOD_DATA = ModData.get(DICE_SYSTEM_MOD_STRING)
+
+    if DICE_CLIENT_MOD_DATA == nil then
+        DICE_CLIENT_MOD_DATA = {}
+    end
+end
+Events.OnConnected.Add(OnConnected)
+
+local function copyTable(tableA, tableB)
+    if not tableA or not tableB then
+        return
+    end
+    for key, value in pairs(tableB) do
+        tableA[key] = value
+    end
+    for key, _ in pairs(tableA) do
+        if not tableB[key] then
+            tableA[key] = nil
+        end
+    end
+end
+
+---Receives ModData from server
+---@param key string
+---@param data table
+local function ReceiveGlobalModData(key, data)
+    --print("Received global mod data")
+    if key == DICE_SYSTEM_MOD_STRING then
+        --Creating a deep copy of recieved data and storing it in local store CLIENT_GLOBALMODDATA table
+        copyTable(DICE_CLIENT_MOD_DATA, data)
+    end
+
+    --Update global mod data with local table (from global_mod_data.bin)
+    ModData.add(DICE_SYSTEM_MOD_STRING, DICE_CLIENT_MOD_DATA)
+end
+Events.OnReceiveGlobalModData.Add(ReceiveGlobalModData)
+
+--------------------------------
+
+return PlayerHandler

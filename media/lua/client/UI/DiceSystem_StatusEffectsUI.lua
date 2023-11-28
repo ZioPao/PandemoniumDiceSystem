@@ -13,27 +13,9 @@ local debugWriteLog = DiceSystem_Common.DebugWriteLog
 local os_time = os.time
 
 local UPDATE_DELAY = SandboxVars.PandemoniumDiceSystem.DelayUpdateStatusEffects
-
+local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 -----------------
 
----Zomboid doesn't really DistTo. So let's have a wrapper to prevent errors
----@param localPlayer IsoPlayer
----@param onlinePlayer IsoPlayer
----@return number
-local function TryDistTo(localPlayer, onlinePlayer)
-    local dist = 10000000000 -- Fake number, just to prevent problems later.
-    if localPlayer and onlinePlayer then
-        if onlinePlayer:getCurrentSquare() ~= nil then
-            dist = localPlayer:DistTo(onlinePlayer)
-        end
-    end
-
-    return dist
-end
-
-
-
-------------------
 
 StatusEffectsUI = ISPanel:derive("StatusEffectsUI")
 StatusEffectsUI.nearPlayersStatusEffects = {}
@@ -92,7 +74,7 @@ function StatusEffectsUI:render()
         local pl = self.onlinePlayers:get(i)
         -- When servers are overloaded, it seems like they like to make players "disappear". That means they exists, but they're not
         -- in any square. This causes a bunch of issues here, since it needs to access getCurrentSquare in checkCanSeeClient
-        if pl and TryDistTo(self.player, pl) < StatusEffectsUI.renderDistance then
+        if pl and StatusEffectsHandler.TryDistTo(self.player, pl) < StatusEffectsUI.renderDistance then
             local userID = getOnlineID(pl)
             if shouldUpdate then
                 local username = getUsername(pl)
@@ -155,7 +137,7 @@ end
 function StatusEffectsUI.UpdateLocalStatusEffectsTable(userID, statusEffects)
     StatusEffectsUI.mainPlayer = getPlayer()
     local receivedPlayer = getPlayerByOnlineID(userID)
-    local dist = TryDistTo(StatusEffectsUI.mainPlayer, receivedPlayer)
+    local dist = StatusEffectsHandler.TryDistTo(StatusEffectsUI.mainPlayer, receivedPlayer)
     if dist < StatusEffectsUI.renderDistance then
         StatusEffectsUI.nearPlayersStatusEffects[userID] = {}
         local newStatusEffectsTable = {}

@@ -172,7 +172,7 @@ function DiceMenuAdminViewer:onClick(button)
     if button.internal == "OPEN" then
         ModData.request(DICE_SYSTEM_MOD_STRING)
         local player = self.mainCategory.datas.items[self.mainCategory.datas.selected].item
-        PlayerHandler.SetUser(player:getUsername())
+        PlayerHandler:instantiate(player:getUsername())
         DiceMenu.OpenPanel(true)
     elseif button.internal == 'REFRESH' then
         local players = FetchPlayers()
