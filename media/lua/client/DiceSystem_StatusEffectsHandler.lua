@@ -6,6 +6,8 @@
 -- Mostly composed of static functions, to be used to set stuff from external sources
 
 ---@class StatusEffectsHandler
+---@field nearPlayersStatusEffects table
+---@field reanderDistance 50
 local StatusEffectsHandler = {}
 StatusEffectsHandler.nearPlayersStatusEffects = {}
 StatusEffectsHandler.renderDistance = 50

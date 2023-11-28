@@ -1,6 +1,7 @@
 local PlayerHandler = require("DiceSystem_PlayerHandling")
 local DiceMenu = require("UI/DiceSystem_PlayerUI")
-
+local StatusEffectsHandler = require ("DiceSystem_StatusEffectsHandler")
+-------------
 local ModDataServerCommands = {}
 
 ---Run on a client after successfully resetting or changing their data. Will close their dice panel automatically
@@ -22,7 +23,7 @@ function ModDataServerCommands.ResetClientDiceData(args)
     playerHandler.diceData[username] = nil
 
     -- Reset status effects local table
-    StatusEffectsUI.UpdateLocalStatusEffectsTable(getPlayer():getOnlineID(), {})
+    StatusEffectsHandler.UpdateLocalStatusEffectsTable(getPlayer():getOnlineID(), {})
     playerHandler:initModData(true)
 end
 
@@ -30,7 +31,7 @@ end
 ---@param args table statusEffectsTable=table, userID=number
 function ModDataServerCommands.ReceiveUpdatedStatusEffects(args)
     local statusEffectsTable = args.statusEffectsTable
-    StatusEffectsUI.UpdateLocalStatusEffectsTable(args.userID, statusEffectsTable)
+    StatusEffectsHandler.UpdateLocalStatusEffectsTable(args.userID, statusEffectsTable)
 end
 
 --****************************************************-

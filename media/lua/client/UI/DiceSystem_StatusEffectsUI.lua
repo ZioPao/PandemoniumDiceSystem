@@ -16,9 +16,8 @@ local UPDATE_DELAY = SandboxVars.PandemoniumDiceSystem.DelayUpdateStatusEffects
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 -----------------
 
-
-StatusEffectsUI = ISPanel:derive("StatusEffectsUI")
-StatusEffectsUI.nearPlayersStatusEffects = {}
+---@class StatusEffectsUI : ISPanel
+local StatusEffectsUI = ISPanel:derive("StatusEffectsUI")
 
 --************************************--
 
@@ -32,9 +31,6 @@ function StatusEffectsUI:new()
     o.visibleTarget = o
     o:setAlwaysOnTop(false)
     o:initialise()
-
-    -- Init a table where we're gonna cache the status effects from nearby players
-    StatusEffectsUI.nearPlayersStatusEffects = {}
 
     return o
 end
@@ -59,7 +55,7 @@ function StatusEffectsUI:render()
     if DICE_CLIENT_MOD_DATA[self.currPlayerUsername].isInitialized == false then return end
 
     self.zoom = getCore():getZoom(self.player:getPlayerNum())
-    local statusEffectsTable = StatusEffectsUI.nearPlayersStatusEffects
+    local statusEffectsTable = StatusEffectsHandler.nearPlayersStatusEffects
 
     -- Check timer and update if it's over
     local cTime = os_time()
@@ -130,53 +126,6 @@ end
 
 ----------------------
 -- Static functions, to be used to set stuff from external sources
-
----Used to update the local status effects table
----@param userID number
----@param statusEffects table
-function StatusEffectsUI.UpdateLocalStatusEffectsTable(userID, statusEffects)
-    StatusEffectsUI.mainPlayer = getPlayer()
-    local receivedPlayer = getPlayerByOnlineID(userID)
-    local dist = StatusEffectsHandler.TryDistTo(StatusEffectsUI.mainPlayer, receivedPlayer)
-    if dist < StatusEffectsUI.renderDistance then
-        StatusEffectsUI.nearPlayersStatusEffects[userID] = {}
-        local newStatusEffectsTable = {}
-        for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
-            local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
-            if statusEffects[x] ~= nil and statusEffects[x] == true then
-                --print(x)
-                table.insert(newStatusEffectsTable, x)
-            end
-        end
-
-        if table.concat(newStatusEffectsTable) ~= table.concat(StatusEffectsUI.nearPlayersStatusEffects[userID]) then
-            --print("Changing table! Some stuff is different")
-            StatusEffectsUI.nearPlayersStatusEffects[userID] = newStatusEffectsTable
-            --else
-            --print("Same effects! No change needed")
-        end
-    else
-        StatusEffectsUI.nearPlayersStatusEffects[userID] = {}
-    end
-end
-
----Set the colors table. Used to handle colorblind option
----@param colors table r,g,b
-function StatusEffectsUI.SetColorsTable(colors)
-    StatusEffectsUI.colorsTable = colors
-end
-
----Set the Y offset for the status effects on top of the players heads
----@param offset number
-function StatusEffectsUI.SetUserOffset(offset)
-    StatusEffectsUI.userOffset = offset
-end
-
----Returns the y offset for status effects
----@return number
-function StatusEffectsUI.GetUserOffset()
-    return StatusEffectsUI.userOffset
-end
 
 --************************************--
 -- Setup Status Effects UI
