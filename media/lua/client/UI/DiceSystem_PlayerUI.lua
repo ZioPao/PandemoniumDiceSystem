@@ -36,6 +36,8 @@ end
 local PlayerHandler = require("DiceSystem_PlayerHandling")
 local CommonUI = require("UI/DiceSystem_CommonUI")
 
+---@class DiceMenu : ISCollapsableWindow
+---@field playerHandler PlayerHandler
 local DiceMenu = ISCollapsableWindow:derive("DiceMenu")
 DiceMenu.instance = nil
 
@@ -191,7 +193,7 @@ function DiceMenu:update()
         CommonUI.UpdateStatusEffectsText(self, self.plUsername)
     end
 
-    local armorClassPoints = self.playerHandler:getArmorClass()
+    local armorBonusPoints = self.playerHandler:getArmorBonus()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
         local skill = PLAYER_DICE_VALUES.SKILLS[i]
@@ -201,6 +203,11 @@ function DiceMenu:update()
         if bonusSkillPoints ~= 0 then
             skillPointsString = skillPointsString ..
             string.format(" <RGB:0.94,0.82,0.09> <SPACE> + <SPACE> %d", bonusSkillPoints)
+        end
+
+        -- Specific case for Resolve, it should scale on armor bonus
+        if skill == "Resolve" and armorBonusPoints ~= 0 then
+            skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", armorBonusPoints)
         end
 
 
@@ -215,8 +222,8 @@ function DiceMenu:update()
         end
     end
 
-    self.panelArmorClass:setText(getText("IGUI_PlayerUI_ArmorClass", armorClassPoints))
-    self.panelArmorClass.textDirty = true
+    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", armorBonusPoints))
+    self.panelArmorBonus.textDirty = true
 
     self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", self.playerHandler:getMovementBonus()))
     self.panelMovementBonus.textDirty = true
@@ -336,15 +343,15 @@ function DiceMenu:createChildren()
 
     --* Armor Class *--
     -- TODO Replace with AddPanel
-    self.panelArmorClass = ISRichTextPanel:new(0, yOffset, self.width / 2, frameHeight)
-    self.panelArmorClass:initialise()
-    self:addChild(self.panelArmorClass)
-    self.panelArmorClass.autosetheight = false
-    self.panelArmorClass.marginTop = marginPanelTop
-    self.panelArmorClass.background = true
-    self.panelArmorClass.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.panelArmorClass.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.panelArmorClass:paginate()
+    self.panelArmorBonus = ISRichTextPanel:new(0, yOffset, self.width / 2, frameHeight)
+    self.panelArmorBonus:initialise()
+    self:addChild(self.panelArmorBonus)
+    self.panelArmorBonus.autosetheight = false
+    self.panelArmorBonus.marginTop = marginPanelTop
+    self.panelArmorBonus.background = true
+    self.panelArmorBonus.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.panelArmorBonus.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
+    self.panelArmorBonus:paginate()
 
     --* Movement Bonus *--
     self.panelMovementBonus = ISRichTextPanel:new(self.width / 2, yOffset, self.width / 2, frameHeight)

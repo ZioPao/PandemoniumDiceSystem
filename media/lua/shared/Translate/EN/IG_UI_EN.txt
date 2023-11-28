@@ -23,11 +23,10 @@ IG_UI_EN = {
     IGUI_StsEfct_Prone = "Prone",
     IGUI_StsEfct_Unconscious = "Unconscious",
     
-    IGUI_ArmorBonus = " <CENTRE> Armor Bonus: <SPACE> <RED> +%1",
-    IGUI_MovementBonus =" <CENTRE> Movement Bonus: <SPACE> <RGB:0.15,0.67,0.88> +%1",
-
-    IGUI_Health = " <CENTRE> Health %1/%2",
-    IGUI_Movement = " <CENTRE> Movement %1/%2",
+    IGUI_PlayerUI_ArmorBonus = " <CENTRE> Armor Bonus: <SPACE> <RED> +%1",
+    IGUI_PlayerUI_MovementBonus =" <CENTRE> Movement Bonus: <SPACE> <RGB:0.15,0.67,0.88> +%1",
+    IGUI_PlayerUI_Health = " <CENTRE> Health %1/%2",
+    IGUI_PlayerUI_Movement = " <CENTRE> Movement %1/%2",
 
     IGUI_SkillPointsAllocated = "Skill Points Allocated",
     IGUI_Skill_Charm = "Charm",
