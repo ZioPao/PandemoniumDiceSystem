@@ -506,6 +506,17 @@ function PlayerHandler.CleanModData(userID, username)
     sendClientCommand(DICE_SYSTEM_MOD_STRING, "ResetServerDiceData", { userID = userID, username = username })
 end
 
+---Check if player is initialized and ready to use the system
+---@param username string
+---@return boolean
+PlayerHandler.CheckInitializedStatus = function(username)
+    if DICE_CLIENT_MOD_DATA[username] then
+        return DICE_CLIENT_MOD_DATA[username].isInitialized
+    else
+        return false
+    end
+end
+
 
 ---Calculate the current armor bonus. Must be run ONLY on that specific client!
 ---@param pl IsoPlayer local player

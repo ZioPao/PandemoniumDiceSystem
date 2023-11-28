@@ -293,6 +293,7 @@ require "ISUI/ISAdminPanelUI"
 require "ServerPointsAdminPanel"
 local _ISAdminPanelUICreate = ISAdminPanelUI.create
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ISAdminPanelUI:create()
     _ISAdminPanelUICreate(self)
 

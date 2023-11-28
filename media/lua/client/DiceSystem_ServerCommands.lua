@@ -23,7 +23,7 @@ function ModDataServerCommands.ResetClientDiceData(args)
 
     -- Reset status effects local table
     StatusEffectsUI.UpdateLocalStatusEffectsTable(getPlayer():getOnlineID(), {})
-    PlayerHandler.InitModData(true)
+    playerHandler:initModData(true)
 end
 
 ---Sync status effects for a certain player in a table inside StatusEffectsUI
