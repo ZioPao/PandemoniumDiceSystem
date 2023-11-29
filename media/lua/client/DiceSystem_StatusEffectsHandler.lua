@@ -48,18 +48,6 @@ function StatusEffectsHandler.SetColorsTable(colors)
     StatusEffectsHandler.colorsTable = colors
 end
 
----Set the Y offset for the status effects on top of the players heads
----@param offset number
-function StatusEffectsHandler.SetUserOffset(offset)
-    StatusEffectsHandler.userOffset = offset
-end
-
----Returns the y offset for status effects
----@return number
-function StatusEffectsHandler.GetUserOffset()
-    return StatusEffectsHandler.userOffset
-end
-
 
 function StatusEffectsHandler.TryDistTo(localPlayer, onlinePlayer)
     local dist = 10000000000 -- Fake number, just to prevent problems later.

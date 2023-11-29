@@ -88,6 +88,19 @@ function StatusEffectsUI:render()
     end
 end
 
+---Set the Y offset for the status effects on top of the players heads
+---@param offset number
+function StatusEffectsUI.SetUserOffset(offset)
+    StatusEffectsUI.userOffset = offset
+end
+
+---Returns the y offset for status effects
+---@return number
+function StatusEffectsUI.GetUserOffset()
+    return StatusEffectsUI.userOffset or 0
+end
+
+
 ---Main function ran during the render loop
 ---@param pl IsoPlayer
 ---@param statusEffects table
