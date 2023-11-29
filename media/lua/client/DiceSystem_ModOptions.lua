@@ -1,4 +1,5 @@
-require ("UI/DiceSystem_StatusEffectsUI")
+local StatusEffectsHandler = require ("DiceSystem_StatusEffectsHandler")
+-------------
 
 local offsets = { "-200", "-150", "-100", "-50", "0", "50", "100", "150", "200" }
 local OPTIONS = {
@@ -17,7 +18,7 @@ local function CheckOptions()
     end
 
     local amount = offsets[OPTIONS.offsetStatusEffects]
-    StatusEffectsUI.SetUserOffset(tonumber(amount))
+    StatusEffectsHandler.SetUserOffset(tonumber(amount) or 0)
 end
 
 -----------------------------
@@ -48,12 +49,12 @@ if ModOptions and ModOptions.getInstance then
     offsetStatusEffects.tooltip = "Set the offset for the status effects on top of the players heads"
     function offsetStatusEffects:OnApplyInGame(val)
         local amount = offsets[val]
-        StatusEffectsUI.SetUserOffset(tonumber(amount))
+        StatusEffectsHandler.SetUserOffset(tonumber(amount) or 0)
     end
 
     Events.OnGameStart.Add(CheckOptions)
 else
     --print("Setting normal colors")
     DiceSystem_Common.SetStatusEffectsColorsTable(COLORS_DICE_TABLES.STATUS_EFFECTS)
-    StatusEffectsUI.SetUserOffset(0)
+    StatusEffectsHandler.SetUserOffset(0)
 end

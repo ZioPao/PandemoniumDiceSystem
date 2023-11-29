@@ -5,7 +5,7 @@ local TestUtils = require("TestFramework/TestUtils")
 
 function DeleteGlobalModData()
     local PlayerHandler = require("DiceSystem_PlayerHandling")
-    PlayerHandler.data = {}
+    PlayerHandler.diceData = {}
     ModData.add(DICE_SYSTEM_MOD_STRING, {})
 end
 
@@ -34,11 +34,14 @@ TestFramework.registerTestModule("UI Tests", "Do initialization", function()
         -- TODO This is not really how the UI would work, so it's not really a correct test, but it'll have to do
         local PlayerHandler = require("DiceSystem_PlayerHandling")
         local randOcc = PLAYER_DICE_VALUES.OCCUPATIONS[ZombRand(1, #PLAYER_DICE_VALUES.OCCUPATIONS)]
-        PlayerHandler.SetOccupation(randOcc)
+        local o = PlayerHandler:instantiate(getPlayer():getUsername())
+        o:setOccupation(randOcc)
     end
 
     function Tests.SetRandomSkills()
         local PlayerHandler = require("DiceSystem_PlayerHandling")
+        local o = PlayerHandler:instantiate(getPlayer():getUsername())
+
         repeat
             local loops = ZombRand(5)
             local fakeBtn = { internal = 'PLUS_SKILL', skill = 'Charm' }
@@ -70,7 +73,7 @@ TestFramework.registerTestModule("UI Tests", "Do initialization", function()
             for i = 0, loops do
                 Tests.pnl:onOptionMouseDown(fakeBtn)
             end
-        until PlayerHandler.GetAllocatedSkillPoints() == 20
+        until o:getAllocatedSkillPoints() == 20
     end
 
     function Tests.SaveDataAndReopen()
@@ -104,12 +107,13 @@ end)
 TestFramework.registerTestModule("Functionality Tests", "Status Effects", function()
     local Tests = {}
     local PlayerHandler = require("DiceSystem_PlayerHandling")
+    local o = PlayerHandler:instantiate(getPlayer():getUsername())
 
     function Tests.SetRandomEffects()
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
             local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
             if ZombRand(100) > 50 then
-                PlayerHandler.ToggleStatusEffectValue(x)
+                o:toggleStatusEffectValue(x)
             end
         end
     end

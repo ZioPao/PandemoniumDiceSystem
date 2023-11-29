@@ -1,6 +1,7 @@
 require "ISUI/ISCharacterScreen"
 
 _ISCharacterScreenCreate = ISCharacterScreen.create
+---@diagnostic disable-next-line: duplicate-set-field
 function ISCharacterScreen:create()
     _ISCharacterScreenCreate(self)
     self.diceMenuButton = ISButton:new(0, 0, 100, getTextManager():getFontHeight(UIFont.Small), "Dice System", self,
@@ -22,7 +23,7 @@ end
 
 function ISCharacterScreen.onOpenDiceMenu()
     local PlayerHandler = require("DiceSystem_PlayerHandling")
-    PlayerHandler.SetUser(getPlayer():getUsername())
+    PlayerHandler:instantiate(getPlayer():getUsername())
 
     local DiceMenu = require("UI/DiceSystem_PlayerUI")
     DiceMenu.OpenPanel(false)

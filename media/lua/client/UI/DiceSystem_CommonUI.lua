@@ -19,7 +19,7 @@ local function CalculateStatusEffectsMargin(parentWidth, text)
     return (parentWidth - getTextManager():MeasureStringX(UIFont.NewSmall, text)) / 2
 end
 
-
+---@class DiceCommonUI
 local DiceCommonUI = {}
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 DiceCommonUI.FONT_SCALE = FONT_HGT_SMALL / 16
