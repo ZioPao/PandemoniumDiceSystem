@@ -124,17 +124,20 @@ function StatusEffectsUI:drawStatusEffect(pl, statusEffects)
     local x = baseX
     local y = baseY
 
-    local isSecondLine = false
+    local lineCounter = 0
+
+    -- TODO Can't go any more than two lines.
     for k = 1, #statusEffects do
         local v = statusEffects[k]
 
         -- OPTIMIZE This part could be cached if we wanted.
         local stringToPrint = string.format("[%s]", v)
         --print(stringToPrint)
-        if k > 3 and isSecondLine == false then
+
+        if lineCounter >= 3 then
             y = y + getTextManager():MeasureStringY(UIFont.NewMedium, stringToPrint)
             x = baseX
-            isSecondLine = true
+            lineCounter = 0
         end
 
         local color = DiceSystem_Common.statusEffectsColors[v]
@@ -143,6 +146,8 @@ function StatusEffectsUI:drawStatusEffect(pl, statusEffects)
         self:drawText(stringToPrint, x - 2, y - 2, 0, 0, 0, 0.5, UIFont.NewMedium)
         self:drawText(stringToPrint, x, y, color.r, color.g, color.b, 1, UIFont.NewMedium)
         x = x + getTextManager():MeasureStringX(UIFont.NewMedium, stringToPrint) + 10
+        lineCounter = lineCounter + 1
+
     end
 end
 

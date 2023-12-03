@@ -191,23 +191,8 @@ function DiceMenu:update()
         self.labelSkillPointsAllocated:setName("")
 
         self.comboStatusEffects.disabled = (plUsername ~= PlayerHandler.username)
-        local statusEffectsText = ""
 
-        -- TODO Test it
-        local activeStatusEffects = PlayerHandler.GetActiveStatusEffectsByUsername(PlayerHandler.username)
-
-        for i = 1, #activeStatusEffects do
-            local v = activeStatusEffects[i]
-            local singleStatus = GetColoredStatusEffect(v)
-
-            if statusEffectsText == "" then
-                statusEffectsText = " <CENTRE> " .. singleStatus
-            else
-                statusEffectsText = statusEffectsText .. " <SPACE> - <SPACE> " .. singleStatus
-            end
-        end
-        self.labelStatusEffectsList:setText(statusEffectsText)
-        self.labelStatusEffectsList.textDirty = true
+        CommonUI.UpdateStatusEffectsText(self, plUsername)
     end
 
     local armorBonusPoints = PlayerHandler.GetArmorBonus()
