@@ -1,6 +1,6 @@
 DICE_SYSTEM_MOD_STRING = "PandemoniumDiceSystem"
 PLAYER_DICE_VALUES = {
-    STATUS_EFFECTS = { "Stable", "Wounded", "Bleeding", "Moderate", "Severe", "Prone", "Unconscious" },
+    STATUS_EFFECTS = { "Stable", "Wounded", "Bleeding", "Moderate", "Severe", "Prone", "Unconscious", "Frightened" },
     OCCUPATIONS = { "Unemployed", "Artist", "WageSlave", "Soldier", "Frontiersmen", "LawEnforcement", "FirstResponders",
         "Criminal", "BlueCollar", "Engineer", "WhiteCollar", "Clinician", "Academic" },
     SKILLS = { "Charm", "Brutal", "Resolve", "Sharp", "Deft", "Wit", "Luck" },
@@ -30,11 +30,12 @@ COLORS_DICE_TABLES = {
     STATUS_EFFECTS     = {
         Stable = { r = 0, g = 0.68, b = 0.94 },
         Wounded = { r = 0.95, g = 0.35, b = 0.16 },
-        Bleeding = { r = 0.66, g = 0.15, b = 0.18 },
-        Moderate = { r = 1, g = 1, b = 1 },
-        Severe = { r = 1, g = 1, b = 1 },
-        Prone = { r = 0.04, g = 0.58, b = 0.27 },
-        Unconscious = { r = 0.57, g = 0.15, b = 0.56 }
+        Bleeding = { r = 0.66, g = 0.15, b = 0.18 },        
+        Moderate = { r = 1, g = 1, b = 1 },                 -- FFFFFF
+        Severe = { r = 1, g = 1, b = 1 },                   -- FFFFFF
+        Prone = { r = 0.04, g = 0.58, b = 0.27 },           -- #669445
+        Unconscious = { r = 0.57, g = 0.15, b = 0.56 },     -- #91268f
+        Frightened = { r = 0.369, g = 0.369, b = 0.863}     -- 94,94,220
     },
 
     -- Used for color blind users
@@ -45,7 +46,8 @@ COLORS_DICE_TABLES = {
         Moderate = { r = 1, g = 1, b = 1 },            -- only white
         Severe = { r = 1, g = 1, b = 1 },              -- only white
         Prone = { r = 0.35, g = 0.49, b = 0.64 },      -- #5A7EA3
-        Unconscious = { r = 0.96, g = 0.69, b = 0.81 } -- #F5B0CF
+        Unconscious = { r = 0.96, g = 0.69, b = 0.81 }, -- #F5B0CF
+        Frightened = { r = 0.369, g = 0.369, b = 0.863}     -- TEMP
     }
 }
 

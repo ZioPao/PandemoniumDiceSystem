@@ -3,15 +3,16 @@ if not getActivatedMods():contains("TEST_FRAMEWORK") or not isDebugEnabled() the
 local TestFramework = require("TestFramework/TestFramework")
 local TestUtils = require("TestFramework/TestUtils")
 
+local PlayerHandler = require("DiceSystem_PlayerHandling")
+local DiceMenu = require("UI/DiceSystem_PlayerUI")
+
 function DeleteGlobalModData()
-    local PlayerHandler = require("DiceSystem_PlayerHandling")
     PlayerHandler.data = {}
     ModData.add(DICE_SYSTEM_MOD_STRING, {})
 end
 
 TestFramework.registerTestModule("UI Tests", "Do initialization", function()
     local Tests = {}
-    local DiceMenu = require("UI/DiceSystem_PlayerUI")
 
     function Tests.OpenPlayerPanel()
         Tests.pnl = DiceMenu.OpenPanel(false)
@@ -32,7 +33,6 @@ TestFramework.registerTestModule("UI Tests", "Do initialization", function()
 
     function Tests.SetRandomProfession()
         -- TODO This is not really how the UI would work, so it's not really a correct test, but it'll have to do
-        local PlayerHandler = require("DiceSystem_PlayerHandling")
         local randOcc = PLAYER_DICE_VALUES.OCCUPATIONS[ZombRand(1, #PLAYER_DICE_VALUES.OCCUPATIONS)]
         PlayerHandler.SetOccupation(randOcc)
     end
@@ -103,7 +103,6 @@ end)
 
 TestFramework.registerTestModule("Functionality Tests", "Status Effects", function()
     local Tests = {}
-    local PlayerHandler = require("DiceSystem_PlayerHandling")
 
     function Tests.SetRandomEffects()
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
