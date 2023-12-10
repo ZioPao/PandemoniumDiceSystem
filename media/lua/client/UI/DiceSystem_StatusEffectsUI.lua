@@ -96,7 +96,7 @@ function StatusEffectsUI:render()
             local userID = getOnlineID(pl)
             if shouldUpdate then
                 local username = getUsername(pl)
-                print("Updating for " ..username)
+                --print("Updating for " ..username)
                 --print("Requesting update for " .. pl:getUsername())
                 sendClientCommand(DICE_SYSTEM_MOD_STRING, 'RequestUpdatedStatusEffects',
                     { username = username, userID = userID })
