@@ -535,7 +535,7 @@ function DiceMenu.OpenPanel(isAdminMode)
     end
 
 
-    print(FONT_SCALE)
+    --print(FONT_SCALE)
     local width = 460 * FONT_SCALE
     local height = 700 * FONT_SCALE
     local pnl = DiceMenu:new(100, 200, width, height)

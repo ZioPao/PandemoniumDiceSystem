@@ -6,9 +6,9 @@ local ModDataCommands = {}
 
 ---Gets a FULL table from a client. Extremely heavy
 ---@param playerObj IsoPlayer
----@param args table data=table, username=string
+---@param args {data : table, username : string}
 function ModDataCommands.UpdatePlayerStats(playerObj, args)
-	--print("Syncing player data for " .. args.username)
+	print("DiceSystem: Syncing player data for " .. args.username)
 	if PlayersDiceData == nil then return end
 	if args == nil then
 		args = {

@@ -500,19 +500,6 @@ PlayerStatsHandler.InitModData = function(force)
         PlayerStatsHandler.username = getPlayer():getUsername()
     end
 
-
-    -- TODO Check for additional status effects and add it back in case it's missing
-
-    if DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] ~= nil then
-
-        for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
-            local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
-            DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username].statusEffects[x] = false
-        end
-        SyncPlayerTable(PlayerStatsHandler.username)
-        print("DiceSystem: initialized player")
-    end
-
     -- This should happen only from that specific player, not an admin
     if (DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] == nil) or force then
         --print("[DiceSystem] Initializing new player dice data")
@@ -560,7 +547,7 @@ PlayerStatsHandler.InitModData = function(force)
         SyncPlayerTable(PlayerStatsHandler.username)
         print("DiceSystem: initialized player")
     elseif DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[PlayerStatsHandler.username] ~= nil then
-        -- Updating Status Effects
+        --Updating Status Effects
 
         local isChanged = false
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
