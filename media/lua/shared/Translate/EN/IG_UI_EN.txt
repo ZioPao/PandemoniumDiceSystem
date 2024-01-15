@@ -22,6 +22,7 @@ IG_UI_EN = {
     IGUI_StsEfct_Severe = "Severe",
     IGUI_StsEfct_Prone = "Prone",
     IGUI_StsEfct_Unconscious = "Unconscious",
+    IGUI_StsEfct_Frightened = "Frightened",
     
     IGUI_PlayerUI_ArmorBonus = " <CENTRE> Armor Bonus: <SPACE> <RED> +%1",
     IGUI_PlayerUI_MovementBonus =" <CENTRE> Movement Bonus: <SPACE> <RGB:0.15,0.67,0.88> +%1",

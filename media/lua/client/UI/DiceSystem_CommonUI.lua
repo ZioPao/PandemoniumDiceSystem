@@ -66,7 +66,7 @@ function DiceCommonUI.UpdateStatusEffectsText(parent, username)
     local amountActiveStatusEffects = #activeStatusEffects
 
     local indexTab = username .. tostring(parent)
-    if DiceCommonUI.cachedStatusEffects[indexTab] and DiceCommonUI.cachedStatusEffects[indexTab].size and DiceCommonUI.cachedStatusEffects[indexTab].size == amountActiveStatusEffects then
+    if DiceCommonUI.cachedStatusEffects and DiceCommonUI.cachedStatusEffects[indexTab] and DiceCommonUI.cachedStatusEffects[indexTab].size and DiceCommonUI.cachedStatusEffects[indexTab].size == amountActiveStatusEffects then
         --print("Updating from cache")
         parent.labelStatusEffectsList:setText(DiceCommonUI.cachedStatusEffects[indexTab].text)
         parent.labelStatusEffectsList.textDirty = true

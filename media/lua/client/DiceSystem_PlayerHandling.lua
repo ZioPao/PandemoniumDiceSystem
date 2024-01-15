@@ -533,34 +533,40 @@ function PlayerHandler.CalculateArmorBonus(pl)
     local wornItems = pl:getWornItems()
     local tempProtection = 0
     for i = 1, wornItems:size() do
+        ---@type InventoryItem
         local item = wornItems:get(i - 1):getItem()
         if instanceof(item, "Clothing") then
+            ---@cast item Clothing
             tempProtection = tempProtection + item:getBulletDefense()
         end
     end
-    local scaledProtection = math.floor(tempProtection / 100)
-    --print(scaledProtection)
-    if scaledProtection < 0 then scaledProtection = 0 end
+
+    -- Calculate the armor bonus
+    local armorBonus = math.floor(tempProtection / 100)
+    if armorBonus < 0 then armorBonus = 0 end
+
+    -- Hard cap it at 3
+    if armorBonus > 3 then armorBonus = 3 end
+
 
     -- TODO Cache old armor bonus before updating it
 
     -- Set the correct amount of armor bonus
-    DICE_CLIENT_MOD_DATA[username].armorBonus = scaledProtection
+    DICE_CLIENT_MOD_DATA[username].armorBonus = armorBonus
 
     -- We need to scale the movement accordingly
-    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - scaledProtection
+    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - armorBonus
     handler:setMaxMovement(maxMov)
 
     -- TODO Cache old max movement before updating it
     if handler:isPlayerInitialized() then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', {armorBonus = scaledProtection, username = username})
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', {armorBonus = armorBonus, username = username})
         sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', {maxMovement = maxMov, username = username})
     end
 
     return true
 
 end
-
 
 ------------------------
 --* Various events handling

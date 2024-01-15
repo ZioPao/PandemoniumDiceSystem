@@ -1,0 +1,23 @@
+version=1
+id=2998453297
+title=Pandemonium RP - Dice System
+description=[h2]Features[/h2]
+description=[olist]
+description=[*]A system to manage character sheets with an intuitive UI, designed by Therackisback
+description=[*]Roll and automatically calculate, based on the character assigned points, skills checks
+description=[*]Full compatibility with Server Points, Buffy's RP Chat and Buffy's Character Bio
+description=[*]Admin tools to manage players stats
+description=[*]Optimized for servers with big player bases
+description=[*]Easily expandable
+description=[/olist]
+description=
+description=[h2]Contacts[/h2]
+description=[url=https://www.pandemoniumpzrp.com//]Pandemonium RP Website[/url]
+description=
+description=[hr]
+description=
+description=[url=https://ko-fi.com/M4M7IERNW][img]https://storage.ko-fi.com/cdn/kofi3.png[/img][/url]
+description=
+description=[hr]
+tags=Build 41;Framework;Misc;Realistic;Silly/Fun
+visibility=unlisted
