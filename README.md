@@ -1,4 +1,4 @@
-![logo](/logos/ppzrplogo-05.png)
+![logo](/workshop_files/ppzrplogo-05.png)
 ## Features
 1) A system to manage character sheets with an intuitive UI, made by therackisback.
 2) Admin tools to manage players stats.
