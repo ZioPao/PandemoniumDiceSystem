@@ -23,12 +23,14 @@ end
 local DiceCommonUI = {}
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 DiceCommonUI.FONT_SCALE = FONT_HGT_SMALL / 16
-DiceCommonUI.cachedStatusEffects = {}
+
 
 if DiceCommonUI.FONT_SCALE < 1 then
     DiceCommonUI.FONT_SCALE = 1
 end
 
+DiceCommonUI.cachedStatusEffects = {}
+DiceCommonUI.BUTTON_WIDTH = 100
 
 ---Create a text panel
 ---@param parent ISPanel
