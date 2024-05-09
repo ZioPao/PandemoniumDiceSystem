@@ -164,7 +164,7 @@ end
 ---@param isInitialized boolean
 ---@param yOffset number
 ---@param frameHeight number
----@return number yOffset
+---@return ISPanel skillPanel
 function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, isInitialized, yOffset, frameHeight)
 
     local skillPanel = ISPanel:new(0, yOffset, self.width, frameHeight)
@@ -184,7 +184,9 @@ function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, 
     self:addSkillPanelLabel(skillPanel, skill, xOffset, frameHeight)
     self:addSkillPanelButtons(skillPanel, skill, isInitialized, frameHeight, plUsername)
     self:addSkillPanelPoints(skillPanel, skill)
-    return yOffset + frameHeight
+
+
+    return skillPanel
 end
 
 
@@ -200,7 +202,12 @@ function DiceMenu:fillSkillsContainer()
         local skill = PLAYER_DICE_VALUES.SKILLS[i]
 
         -- TODO Fix warning
-        yOffset = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, isInitialized, yOffset, frameHeight)
+        local skillPanel = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, isInitialized, yOffset, frameHeight)
+        yOffset = yOffset + frameHeight
+
+        self.skillsPanelContainer:addChild(skillPanel)
+        self.skillsPanelContainer:setHeight(self.skillsPanelContainer:getHeight() + frameHeight)
+
     end
 end
 
