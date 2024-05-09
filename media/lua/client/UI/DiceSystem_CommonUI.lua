@@ -141,4 +141,106 @@ function DiceCommonUI.AddPanel(parent, name, width, height, offsetX, offsetY)
     parent[name]:paginate()
 end
 
+
+
+
+--* SKILL PANEL SPECIFIC *--
+
+---Add the label to a single skill panel
+---@param container ISPanel
+---@param skill string
+---@param x number
+---@param frameHeight number
+function DiceCommonUI.AddSkillPanelLabel(parent, container, skill, x, frameHeight)
+    local skillString = getText("IGUI_Skill_" .. skill)
+    local label = ISLabel:new(x, frameHeight / 4, 25, skillString, 1, 1, 1, 1, UIFont.Small, true)
+    parent["label"..skill] = label        -- Reference for later
+    label:initialise()
+    label:instantiate()
+    container:addChild(label)
+end
+
+
+---@param container ISPanel
+---@param skill string
+---@param isInitialized boolean
+---@param frameHeight number
+---@param plUsername string
+function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitialized, frameHeight, plUsername)
+    local btnWidth = DiceCommonUI.BUTTON_WIDTH
+
+    -- Check if is initialized
+    if not isInitialized or parent:getIsAdminMode() then
+        local btnPlus = ISButton:new(parent.width - btnWidth, 0, btnWidth, frameHeight - 2, "+", parent,
+            parent.onOptionMouseDown)
+        btnPlus.internal = "PLUS_SKILL"
+        btnPlus.skill = skill
+        btnPlus:initialise()
+        btnPlus:instantiate()
+        btnPlus:setEnable(true)
+        parent["btnPlus" .. skill] = btnPlus
+        container:addChild(btnPlus)
+
+        local btnMinus = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth, frameHeight - 2, "-", parent,
+            parent.onOptionMouseDown)
+        btnMinus.internal = "MINUS_SKILL"
+        btnMinus.skill = skill
+        btnMinus:initialise()
+        btnMinus:instantiate()
+        btnMinus:setEnable(true)
+        parent["btnMinus" .. skill] = btnMinus
+        container:addChild(btnMinus)
+    elseif isInitialized then
+        -- ROLL
+        local btnRoll = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth * 2, frameHeight - 2, "Roll", parent,
+            parent.onOptionMouseDown)
+        btnRoll.internal = "SKILL_ROLL"
+        btnRoll:initialise()
+        btnRoll:instantiate()
+        btnRoll.skill = skill
+        btnRoll:setEnable(plUsername == parent.playerHandler.username)      -- TODO will this work here?
+        container:addChild(btnRoll)
+    end
+end
+
+---@param parent ISPanel
+---@param container ISPanel
+---@param skill string
+function DiceCommonUI.AddSkillPanelPoints(parent, container, skill)
+    -- Added - 60 to account for eventual armor bonus
+    local skillPointsPanel = ISRichTextPanel:new(parent.width - DiceCommonUI.BUTTON_WIDTH * 2 - 60, 0, 100, 25)
+
+    skillPointsPanel:initialise()
+    container:addChild(skillPointsPanel)
+    skillPointsPanel.autosetheight = true
+    skillPointsPanel.background = false
+    skillPointsPanel:paginate()
+    parent["labelSkillPoints" .. skill] = skillPointsPanel
+end
+
+
+---@param parent ISPanel
+---@param skill string
+---@param isAlternativeColor boolean
+---@param yOffset number
+---@param frameHeight number
+---@return ISPanel
+function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeColor, yOffset, frameHeight)
+    local skillPanel = ISPanel:new(0, yOffset, parent.width, frameHeight)
+    parent["skillPanel"..skill] = skillPanel      -- Add a reference that we can call later
+
+    if not isAlternativeColor then
+        -- rgb(56, 57, 56)
+        skillPanel.backgroundColor = { r = 0.22, g = 0.22, b = 0.22, a = 1 }
+    else
+        -- rgb(71, 56, 51)
+        skillPanel.backgroundColor = { r = 0.28, g = 0.22, b = 0.2, a = 1 }
+    end
+
+    skillPanel.borderColor = { r = 0, g = 0, b = 0, a = 1 }
+
+    return skillPanel
+end
+
+
 return DiceCommonUI

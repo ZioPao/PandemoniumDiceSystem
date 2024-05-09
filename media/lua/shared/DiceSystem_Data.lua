@@ -1,4 +1,5 @@
 DICE_SYSTEM_MOD_STRING = "PandemoniumDiceSystem"
+
 PLAYER_DICE_VALUES = {
     STATUS_EFFECTS = { "Stable", "Wounded", "Bleeding", "Moderate", "Severe", "Prone", "Unconscious", "Frightened" },
     OCCUPATIONS = { "Unemployed", "Artist", "WageSlave", "Soldier", "Frontiersmen", "LawEnforcement", "FirstResponders",
