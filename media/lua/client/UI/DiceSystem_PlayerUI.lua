@@ -141,7 +141,20 @@ function DiceMenu:addSkillPanelButtons(parent, skill, isInitialized, frameHeight
         btnRoll:setEnable(plUsername == self.playerHandler.username)
         parent:addChild(btnRoll)
     end
+end
 
+---@param parent ISPanel
+---@param skill string
+function DiceMenu:addSkillPanelPoints(parent, skill)
+    -- Added - 60 to account for eventual armor bonus
+    local skillPointsPanel = ISRichTextPanel:new(self.width - CommonUI.BUTTON_WIDTH * 2 - 60, 0, 100, 25)
+
+    skillPointsPanel:initialise()
+    parent:addChild(skillPointsPanel)
+    skillPointsPanel.autosetheight = true
+    skillPointsPanel.background = false
+    skillPointsPanel:paginate()
+    self["labelSkillPoints" .. skill] = skillPointsPanel
 end
 
 
@@ -170,7 +183,8 @@ function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, 
     local xOffset = 10
     self:addSkillPanelLabel(skillPanel, skill, xOffset, frameHeight)
     self:addSkillPanelButtons(skillPanel, skill, isInitialized, frameHeight, plUsername)
-    return yOffset
+    self:addSkillPanelPoints(skillPanel, skill)
+    return yOffset + frameHeight
 end
 
 
