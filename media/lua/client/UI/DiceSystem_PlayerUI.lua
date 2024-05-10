@@ -151,6 +151,20 @@ function DiceMenu:fillSkillsContainer()
     end
 end
 
+
+function DiceMenu:updatePanelLine(name, currVal, maxVal)
+    local panelId = "panel"..name
+    local btnPlusId = "btnPlus"..name
+    local btnMinusId = "btnMinus"..name
+
+    self[panelId]:setText(getText("IGUI_PlayerUI_"..name, currVal, maxVal))
+    self[panelId].textDirty = true
+
+    self[btnPlusId]:setEnable(currVal < maxVal)
+    self[btnMinusId]:setEnable(currVal > 0)
+end
+
+
 function DiceMenu:update()
     ISCollapsableWindow.update(self)
 
@@ -218,20 +232,13 @@ function DiceMenu:update()
     self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", self.playerHandler:getMovementBonus()))
     self.panelMovementBonus.textDirty = true
 
-    local currentHealth = self.playerHandler:getCurrentHealth()
+    local currHealth = self.playerHandler:getCurrentHealth()
     local maxHealth = self.playerHandler:getMaxHealth()
-    self.panelHealth:setText(getText("IGUI_PlayerUI_Health", self.playerHandler:getCurrentHealth(),
-        self.playerHandler:getMaxHealth()))
-    self.panelHealth.textDirty = true
-    self.btnPlusHealth:setEnable(currentHealth < maxHealth)
-    self.btnMinusHealth:setEnable(currentHealth > 0)
+    self:updatePanelLine("Health", currHealth, maxHealth)
 
     local totMovement = self.playerHandler:getMaxMovement() + self.playerHandler:getMovementBonus()
     local currMovement = self.playerHandler:getCurrentMovement()
-    self.panelMovement:setText(getText("IGUI_PlayerUI_Movement", currMovement, totMovement))
-    self.panelMovement.textDirty = true
-    self.btnPlusMovement:setEnable(currMovement < totMovement)
-    self.btnMinusMovement:setEnable(currMovement > 0)
+    self:updatePanelLine("Movement", currMovement, totMovement)
 end
 
 function DiceMenu:calculateHeight(y)
@@ -253,6 +260,45 @@ function DiceMenu:addNameLabel(playerName, y)
 end
 
 
+---@param name string
+---@param y number
+---@param frameHeight number
+function DiceMenu:createPanelLine(name, y, frameHeight)
+    local upperName = name:upper()
+    local panelId = "panel" .. name
+    self[panelId] = ISRichTextPanel:new(0, y, self.width, frameHeight)
+    self[panelId]:initialise()
+    self:addChild(self[panelId])
+    self[panelId].autosetheight = false
+    self[panelId].background = false
+    self[panelId]:paginate()
+
+    --LEFT MINUS BUTTON
+    local btnMinusId = "btnMinus" .. name
+    self[btnMinusId] = ISButton:new(0, 0, self.width / 4, frameHeight, "-", self, self.onOptionMouseDown)
+    self[btnMinusId].internal = "MINUS_" .. upperName
+    self[btnMinusId].borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
+    self[btnMinusId]:initialise()
+    self[btnMinusId]:instantiate()
+    self[btnMinusId]:setEnable(true)
+    self[panelId]:addChild(self[btnMinusId])
+
+    --RIGHT PLUS BUTTON
+    local btnPlusId = "btnPlus" .. name
+    self[btnPlusId] = ISButton:new(self.width / 1.333, 0, self.width / 4, frameHeight, "+", self,
+        self.onOptionMouseDown)
+    self[btnPlusId].borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
+    self[btnPlusId].internal = "PLUS_" .. upperName
+    self[btnPlusId]:initialise()
+    self[btnPlusId]:instantiate()
+    self[btnPlusId]:setEnable(true)
+    self[panelId]:addChild(self[btnPlusId])
+end
+
+
+
+
+
 function DiceMenu:createChildren()
     local yOffset = 40
     local pl
@@ -271,7 +317,6 @@ function DiceMenu:createChildren()
 
     --* Name Label *--
     yOffset = self:addNameLabel(playerName, yOffset)
-    --yOffset = CommonUI.AddCenteredTextLabel(self, "nameLabel", playerName, yOffset)
 
     --* Status Effects Panel *--
     local labelStatusEffectsHeight = 25 * (FONT_SCALE + 0.5)
@@ -368,63 +413,14 @@ function DiceMenu:createChildren()
     self.panelMovementBonus.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
     self.panelMovementBonus:paginate()
 
-
     yOffset = yOffset + frameHeight
 
     --* Health Line *--
-    CommonUI.AddPanel(self, "panelHealth", self.width, frameHeight, 0, yOffset)
-    --CommonUI.AddHealthPanel(self, yOffset, self.width, frameHeight)
-
-    --LEFT MINUS BUTTON
-    self.btnMinusHealth = ISButton:new(0, 0, self.width / 4, frameHeight, "-", self, self.onOptionMouseDown)
-    self.btnMinusHealth.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.btnMinusHealth.internal = "MINUS_HEALTH"
-    self.btnMinusHealth:initialise()
-    self.btnMinusHealth:instantiate()
-    self.btnMinusHealth:setEnable(true)
-    self.panelHealth:addChild(self.btnMinusHealth)
-
-    --RIGHT PLUS BUTTON
-    self.btnPlusHealth = ISButton:new(self.width / 1.333, 0, self.width / 4, frameHeight, "+", self,
-        self.onOptionMouseDown)
-    self.btnPlusHealth.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.btnPlusHealth.internal = "PLUS_HEALTH"
-    self.btnPlusHealth:initialise()
-    self.btnPlusHealth:instantiate()
-    self.btnPlusHealth:setEnable(true)
-    self.panelHealth:addChild(self.btnPlusHealth)
-
-
+    self:createPanelLine("Health", yOffset, frameHeight)
     yOffset = yOffset + frameHeight
 
-
     --* Movement Line *--
-    self.panelMovement = ISRichTextPanel:new(0, yOffset, self.width, frameHeight)
-    self.panelMovement:initialise()
-    self:addChild(self.panelMovement)
-    self.panelMovement.autosetheight = false
-    self.panelMovement.background = false
-    self.panelMovement:paginate()
-
-    --LEFT MINUS BUTTON
-    self.btnMinusMovement = ISButton:new(0, 0, self.width / 4, frameHeight, "-", self, self.onOptionMouseDown)
-    self.btnMinusMovement.internal = "MINUS_MOVEMENT"
-    self.btnMinusMovement.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.btnMinusMovement:initialise()
-    self.btnMinusMovement:instantiate()
-    self.btnMinusMovement:setEnable(true)
-    self.panelMovement:addChild(self.btnMinusMovement)
-
-    --RIGHT PLUS BUTTON
-    self.btnPlusMovement = ISButton:new(self.width / 1.333, 0, self.width / 4, frameHeight, "+", self,
-        self.onOptionMouseDown)
-    self.btnPlusMovement.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self.btnPlusMovement.internal = "PLUS_MOVEMENT"
-    self.btnPlusMovement:initialise()
-    self.btnPlusMovement:instantiate()
-    self.btnPlusMovement:setEnable(true)
-    self.panelMovement:addChild(self.btnPlusMovement)
-
+    self:createPanelLine("Movement", yOffset, frameHeight)
     yOffset = yOffset + frameHeight
 
     --* Skill points *--
