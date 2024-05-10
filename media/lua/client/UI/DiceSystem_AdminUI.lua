@@ -50,6 +50,7 @@ local ENTRY_HGT = FONT_HGT_MEDIUM + 2 * 2
 local PlayerHandler = require("DiceSystem_PlayerHandling")
 local DiceMenu = require("UI/DiceSystem_PlayerUI")
 
+---@class DiceMenuAdminViewer : ISCollapsableWindow
 DiceMenuAdminViewer = ISCollapsableWindow:derive("DiceMenuAdminViewer")
 DiceMenuAdminViewer.messages = {}
 
