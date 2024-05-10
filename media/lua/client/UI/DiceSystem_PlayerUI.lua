@@ -296,6 +296,30 @@ function DiceMenu:createPanelLine(name, y, frameHeight)
 end
 
 
+function DiceMenu:createBottomSection(y)
+    --* Set correct height for the panel AFTER we're done with everything else *--
+    self:calculateHeight(y)
+
+    local btnY = self.height - 35
+
+    if not self.playerHandler:isPlayerInitialized() or isAdmin then
+        self.btnConfirm = ISButton:new(10, btnY, 100, 25, getText("IGUI_Dice_Save"), self,
+            self.onOptionMouseDown)
+        self.btnConfirm.internal = "SAVE"
+        self.btnConfirm:initialise()
+        self.btnConfirm:instantiate()
+        self.btnConfirm:setEnable(true)
+        self:addChild(self.btnConfirm)
+    end
+
+    self.btnClose = ISButton:new(self.width - 100 - 10, btnY, 100, 25, getText("IGUI_Dice_Close"), self,
+        self.onOptionMouseDown)
+    self.btnClose.internal = "CLOSE"
+    self.btnClose:initialise()
+    self.btnClose:instantiate()
+    self.btnClose:setEnable(true)
+    self:addChild(self.btnClose)
+end
 
 
 
@@ -446,25 +470,8 @@ function DiceMenu:createChildren()
     self:fillSkillsContainer()
 
     --* Set correct height for the panel AFTER we're done with everything else *--
-    self:calculateHeight(yOffset)
-
-    if not self.playerHandler:isPlayerInitialized() or isAdmin then
-        self.btnConfirm = ISButton:new(10, self.height - 35, 100, 25, getText("IGUI_Dice_Save"), self,
-            self.onOptionMouseDown)
-        self.btnConfirm.internal = "SAVE"
-        self.btnConfirm:initialise()
-        self.btnConfirm:instantiate()
-        self.btnConfirm:setEnable(true)
-        self:addChild(self.btnConfirm)
-    end
-
-    self.btnClose = ISButton:new(self.width - 100 - 10, self.height - 35, 100, 25, getText("IGUI_Dice_Close"), self,
-        self.onOptionMouseDown)
-    self.btnClose.internal = "CLOSE"
-    self.btnClose:initialise()
-    self.btnClose:instantiate()
-    self.btnClose:setEnable(true)
-    self:addChild(self.btnClose)
+    self:createBottomSection(yOffset)
+    
 end
 
 function DiceMenu:onChangeStatusEffect()
