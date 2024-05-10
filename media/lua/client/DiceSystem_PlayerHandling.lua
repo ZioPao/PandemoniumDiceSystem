@@ -73,7 +73,7 @@ function PlayerHandler:initModData(force)
         -- Do a shallow copy of the table in Data
         ---@type diceDataType
         local tempTable = {}
-        for k,v in DEFAULT_MOD_TABLE do
+        for k,v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
             tempTable[k] = v
         end
         --print("[DiceSystem] Initializing new player dice data")

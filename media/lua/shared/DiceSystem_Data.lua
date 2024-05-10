@@ -55,7 +55,7 @@ COLORS_DICE_TABLES = {
 }
 
 
-DEFAULT_MOD_TABLE = {
+PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE = {
     isInitialized = false,
     occupation = "",
     statusEffects = {},
