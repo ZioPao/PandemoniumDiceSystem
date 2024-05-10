@@ -294,7 +294,6 @@ end
 
 --* Status Effects *--
 
----comment
 ---@param statusEffect string
 function PlayerHandler:toggleStatusEffectValue(statusEffect)
     -- Add a check in the UI to make it clear that we have selected them or something
