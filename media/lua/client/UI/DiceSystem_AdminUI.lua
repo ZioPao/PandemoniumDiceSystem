@@ -159,6 +159,11 @@ function DiceMenuAdminViewer:createChildren()
     self.mainCategory:initList(players)
 end
 
+---@return IsoPlayer
+function DiceMenuAdminViewer:getSelectedPlayer()
+   return self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+end
+
 function DiceMenuAdminViewer:prerender()
     local z = 20
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g,
@@ -175,7 +180,7 @@ end
 function DiceMenuAdminViewer:onClick(button)
     if button.internal == "OPEN" then
         ModData.request(DICE_SYSTEM_MOD_STRING)
-        local player = self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+        local player = self:getSelectedPlayer()
         PlayerHandler:instantiate(player:getUsername())
         DiceMenu.OpenPanel(true)
     elseif button.internal == 'REFRESH' then
@@ -189,8 +194,7 @@ function DiceMenuAdminViewer:onClick(button)
         self.confirmationPanel = ConfirmationPanel.Open(text, self:getX(), confY, self, function()
             -- Get selected player
             ModData.request(DICE_SYSTEM_MOD_STRING)
-            local player = self.mainCategory.datas.items[self.mainCategory.datas.selected].item
-
+            local player = self:getSelectedPlayer()
             local playerID = player:getOnlineID()
 
             -- TODO Fix warning
