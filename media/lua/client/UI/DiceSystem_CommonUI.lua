@@ -35,13 +35,18 @@ DiceCommonUI.BUTTON_WIDTH = 100
 ---Create a text panel
 ---@param parent ISPanel
 ---@param text String
----@param currentOffset number
-function DiceCommonUI.AddCenteredTextLabel(parent, name, text, currentOffset)
-    parent[name] = ISLabel:new((parent.width - getTextManager():MeasureStringX(UIFont.Large, text)) / 2, currentOffset,
-        25, text, 1, 1, 1, 1, UIFont.Large, true)
+---@param y number
+---@return number
+function DiceCommonUI.AddCenteredTextLabel(parent, name, text, y)
+    local x = (parent.width - getTextManager():MeasureStringX(UIFont.Large, text)) / 2
+    local height = 25
+
+    parent[name] = ISLabel:new(x, y, height, text, 1, 1, 1, 1, UIFont.Large, true)
     parent[name]:initialise()
     parent[name]:instantiate()
     parent:addChild(parent[name])
+
+    return y + height
 end
 
 -- Status Effects Panel

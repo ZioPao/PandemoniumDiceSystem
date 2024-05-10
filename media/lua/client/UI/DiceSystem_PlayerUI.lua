@@ -240,6 +240,19 @@ function DiceMenu:calculateHeight(y)
     self:setHeight(finalheight)
 end
 
+
+--* Panel creation *--
+
+
+---@param playerName string
+---@param y number
+---@return number
+function DiceMenu:addNameLabel(playerName, y)
+    y = CommonUI.AddCenteredTextLabel(self, "nameLabel", playerName, y)
+    return y + 10
+end
+
+
 function DiceMenu:createChildren()
     local yOffset = 40
     local pl
@@ -257,8 +270,8 @@ function DiceMenu:createChildren()
 
 
     --* Name Label *--
-    CommonUI.AddCenteredTextLabel(self, "nameLabel", playerName, yOffset)
-    yOffset = yOffset + 25 + 10 -- TODO Janky
+    yOffset = self:addNameLabel(playerName, yOffset)
+    --yOffset = CommonUI.AddCenteredTextLabel(self, "nameLabel", playerName, yOffset)
 
     --* Status Effects Panel *--
     local labelStatusEffectsHeight = 25 * (FONT_SCALE + 0.5)
