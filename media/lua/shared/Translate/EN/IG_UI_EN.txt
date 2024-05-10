@@ -50,6 +50,8 @@ IG_UI_EN = {
     IGUI_Dice_RefreshPlayersList = "Refresh List",
     IGUI_Dice_RefreshPlayersListTooltip = "Refresh the list. Only players who have set up their dice data will be shown",
 
+    IGUI_Dice_ConfirmAction = " <CENTRE> Are you sure?",
+
 
     IGUI_DiceAdminMenu = "Dice System - Admin",
 }

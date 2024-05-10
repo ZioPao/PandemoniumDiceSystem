@@ -87,7 +87,9 @@ function DiceMenuAdminViewer:new(x, y, width, height)
     return o
 end
 
-function DiceMenuAdminViewer:initialise()
+function DiceMenuAdminViewer:createChildren()
+    ISCollapsableWindow.createChildren(self)
+
     local top = 50
 
     self.panel = ISTabPanel:new(10, top, (self.width - 10 * 2) / 1.5, self.height + top - 10)
@@ -169,6 +171,7 @@ function DiceMenuAdminViewer:prerender()
         UIFont.Medium)
 end
 
+---@param button ISButton
 function DiceMenuAdminViewer:onClick(button)
     if button.internal == "OPEN" then
         ModData.request(DICE_SYSTEM_MOD_STRING)
@@ -179,18 +182,26 @@ function DiceMenuAdminViewer:onClick(button)
         local players = FetchPlayers()
         self.mainCategory:initList(players)
     elseif button.internal == 'DELETE_DATA' then
-        -- Get selected player
-        ModData.request(DICE_SYSTEM_MOD_STRING)
-        local player = self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+        local text = getText("IGUI_Dice_ConfirmAction")
+        local confY = self:getY() + self:getHeight() + 20
 
-        local playerID = player:getOnlineID()
-        PlayerHandler.CleanModData(playerID)
-        processAdminChatMessage("Reset " .. player:getUsername() .. " data")
+        local ConfirmationPanel = require("UI/DiceSystem_ConfirmationPanel")
+        self.confirmationPanel = ConfirmationPanel.Open(text, self:getX(), confY, self, function()
+            -- Get selected player
+            ModData.request(DICE_SYSTEM_MOD_STRING)
+            local player = self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+
+            local playerID = player:getOnlineID()
+
+            -- TODO Fix warning
+            PlayerHandler.CleanModData(playerID)
+            processAdminChatMessage("Reset " .. player:getUsername() .. " data")
 
 
-        -- Updates the list after 1 sec to be sure that it's been synced with the server
-        -- TODO This would make sense if we were syncing everything with the server constantly, not anymore.
-        WaitAndFetchPlayers(1)
+            -- Updates the list after 1 sec to be sure that it's been synced with the server
+            -- TODO This would make sense if we were syncing everything with the server constantly, not anymore.
+            WaitAndFetchPlayers(1)
+        end)
     end
 end
 
@@ -298,11 +309,13 @@ local _ISAdminPanelUICreate = ISAdminPanelUI.create
 function ISAdminPanelUI:create()
     _ISAdminPanelUICreate(self)
 
-    local lastButton = self.children[self.IDMax-1].internal == "CANCEL" and self.children[self.IDMax-2] or self.children[self.IDMax-1]
-    self.btnOpenAdminDiceMenu = ISButton:new(lastButton.x, lastButton.y + 5 + lastButton.height, self.sandboxOptionsBtn.width, self.sandboxOptionsBtn.height, getText("IGUI_DiceAdminMenu"), self, DiceMenuAdminViewer.OnOpenPanel)
+    local lastButton = self.children[self.IDMax - 1].internal == "CANCEL" and self.children[self.IDMax - 2] or
+    self.children[self.IDMax - 1]
+    self.btnOpenAdminDiceMenu = ISButton:new(lastButton.x, lastButton.y + 5 + lastButton.height,
+        self.sandboxOptionsBtn.width, self.sandboxOptionsBtn.height, getText("IGUI_DiceAdminMenu"), self,
+        DiceMenuAdminViewer.OnOpenPanel)
     self.btnOpenAdminDiceMenu:initialise()
     self.btnOpenAdminDiceMenu:instantiate()
     self.btnOpenAdminDiceMenu.borderColor = self.buttonBorderColor
     self:addChild(self.btnOpenAdminDiceMenu)
-
 end

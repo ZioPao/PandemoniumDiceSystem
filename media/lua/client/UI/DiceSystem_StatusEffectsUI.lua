@@ -157,3 +157,5 @@ if isClient() then
         Events.OnGameStart.Add(InitStatusEffectsUI)
     end
 end
+
+return StatusEffectsUI
