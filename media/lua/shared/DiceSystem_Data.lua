@@ -54,6 +54,26 @@ COLORS_DICE_TABLES = {
     }
 }
 
+
+DEFAULT_MOD_TABLE = {
+    isInitialized = false,
+    occupation = "",
+    statusEffects = {},
+
+    currentHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
+    maxHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
+    armorBonus = 0,
+
+    currentMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
+    maxMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
+    movementBonus = 0,
+
+    allocatedPoints = 0,
+
+    skills = {},
+    skillsBonus = {}
+}
+
 --**************************************--
 
 DiceSystem_Common = {}

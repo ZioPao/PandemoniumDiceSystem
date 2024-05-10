@@ -10,6 +10,8 @@ local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 ---@alias diceDataType {isInitialized : boolean, occupation : string, statusEffects : statusEffectsType, currentHealth : number, maxHealth : number, armorBonus : number, currentMovement : number, maxMovement : number, movementBonus : number, allocatedPoints : number, skills : skillsTabType, skillsBonus : skillsBonusTabType}
 
 -- Player data saved locally here
+
+---@type table<string, diceDataType>
 DICE_CLIENT_MOD_DATA = {}
 
 ---@class PlayerHandler
@@ -19,7 +21,7 @@ DICE_CLIENT_MOD_DATA = {}
 local PlayerHandler = {}
 PlayerHandler.handlers = {}
 
----Instantiate a new Handler
+---Instantiate a new Handler or fetch an already existing one
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
@@ -68,28 +70,14 @@ function PlayerHandler:initModData(force)
     end
     -- This should happen only from that specific player, not an admin
     if (DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[self.username] == nil) or force then
-        --print("[DiceSystem] Initializing new player dice data")
+        -- Do a shallow copy of the table in Data
         ---@type diceDataType
         local tempTable = {}
-        tempTable = {
-            isInitialized = false,
-            occupation = "",
-            statusEffects = {},
-
-            currentHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
-            maxHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
-            armorBonus = 0,
-
-            currentMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
-            maxMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
-            movementBonus = 0,
-
-            allocatedPoints = 0,
-
-            skills = {},
-            skillsBonus = {}
-        }
-
+        for k,v in DEFAULT_MOD_TABLE do
+            tempTable[k] = v
+        end
+        --print("[DiceSystem] Initializing new player dice data")
+       
         -- Setup status effects
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
             local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
@@ -196,6 +184,8 @@ end
 ---@return boolean
 function PlayerHandler:incrementSkillPoint(skill)
     local result = false
+
+    -- TODO Make this customizable from DATA
     if self.diceData.allocatedPoints < 20 and self.diceData.skills[skill] < 5 then
         self.diceData.skills[skill] = self.diceData.skills[skill] + 1
         self.diceData.allocatedPoints = self.diceData.allocatedPoints + 1
@@ -210,6 +200,9 @@ end
 ---@return boolean
 function PlayerHandler:decrementSkillPoint(skill)
     local result = false
+
+    -- TODO Make this customizable from DATA
+
     if self.diceData.skills[skill] > 0 then
         self.diceData.skills[skill] = self.diceData.skills[skill] - 1
         self.diceData.allocatedPoints = self.diceData.allocatedPoints - 1
@@ -238,13 +231,19 @@ function PlayerHandler:handleSkillPoint(skill, operation)
     --* Special cases
 
     -- Movement Bonus scales in Deft
+    self:handleSkillPointSpecialCases(skill)
+    return result
+end
+
+---@param skill string
+function PlayerHandler:handleSkillPointSpecialCases(skill)
     if skill == 'Deft' then
         local actualPoints = self:getSkillPoints(skill)
         local bonusPoints = self:getBonusSkillPoints(skill)
         self:applyMovementBonus(actualPoints, bonusPoints)
     end
-    return result
 end
+
 
 ---Get Allocated Skill points
 ---@return integer
@@ -440,10 +439,10 @@ function PlayerHandler:getMaxMovement()
 end
 
 ---Set the correct Movement Bonus to the player data
----@param deftPoints number
----@param deftBonusPoints number
-function PlayerHandler:applyMovementBonus(deftPoints, deftBonusPoints)
-    local movBonus = math.floor((deftPoints + deftBonusPoints) / 2)
+---@param points number
+---@param bonusPoints number
+function PlayerHandler:applyMovementBonus(points, bonusPoints)
+    local movBonus = math.floor((points + bonusPoints) / 2)
     DICE_CLIENT_MOD_DATA[self.username].movementBonus = movBonus
 end
 
