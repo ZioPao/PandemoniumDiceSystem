@@ -176,7 +176,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitializ
 
     -- Check if is initialized
     if not isInitialized or parent:getIsAdminMode() then
-        local btnPlus = ISButton:new(parent.width - btnWidth, 0, btnWidth, frameHeight - 2, "+", parent,
+        local btnPlus = ISButton:new(parent.width - btnWidth, 0, btnWidth, frameHeight, "+", parent,
             parent.onOptionMouseDown)
         btnPlus.internal = "PLUS_SKILL"
         btnPlus.skill = skill
@@ -186,7 +186,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitializ
         parent["btnPlus" .. skill] = btnPlus
         container:addChild(btnPlus)
 
-        local btnMinus = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth, frameHeight - 2, "-", parent,
+        local btnMinus = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth, frameHeight, "-", parent,
             parent.onOptionMouseDown)
         btnMinus.internal = "MINUS_SKILL"
         btnMinus.skill = skill
@@ -197,7 +197,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitializ
         container:addChild(btnMinus)
     elseif isInitialized then
         -- ROLL
-        local btnRoll = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth * 2, frameHeight - 2, "Roll", parent,
+        local btnRoll = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth * 2, frameHeight, "Roll", parent,
             parent.onOptionMouseDown)
         btnRoll.internal = "SKILL_ROLL"
         btnRoll:initialise()
@@ -242,7 +242,7 @@ function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeCol
         skillPanel.backgroundColor = { r = 0.28, g = 0.22, b = 0.2, a = 1 }
     end
 
-    skillPanel.borderColor = { r = 0, g = 0, b = 0, a = 1 }
+    skillPanel.borderColor = { r = 1, g = 1, b = 1, a = 0.8 }
 
     return skillPanel
 end
