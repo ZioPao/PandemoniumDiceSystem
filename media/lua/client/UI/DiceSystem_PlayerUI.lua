@@ -243,11 +243,19 @@ function DiceMenu:updateSkills(allocatedPoints, shouldModifyPoints)
 
         -- Handles buttons to assign skill points
         if shouldModifyPoints then
-            self["btnMinus" .. skill]:setEnable(skillPoints ~= 0)
-            self["btnPlus" .. skill]:setEnable(skillPoints ~= PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS and
-                allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+            self:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
         end
     end
+end
+
+
+---@param skill string
+---@param skillPoints number
+---@param allocatedPoints number
+function DiceMenu:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
+    self["btnMinus" .. skill]:setEnable(skillPoints ~= 0)
+    self["btnPlus" .. skill]:setEnable(skillPoints ~= PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS and
+        allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
 end
 
 function DiceMenu:update()
