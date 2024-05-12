@@ -218,8 +218,8 @@ function DiceMenu:updateBonusValues()
 end
 
 ---@param allocatedPoints number
----@param shouldModifyPoints boolean
-function DiceMenu:updateSkills(allocatedPoints, shouldModifyPoints)
+---@param isEditing boolean
+function DiceMenu:updateSkills(allocatedPoints, isEditing)
     local armorBonusPoints = self.playerHandler:getArmorBonus()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -244,12 +244,11 @@ function DiceMenu:updateSkills(allocatedPoints, shouldModifyPoints)
         self["labelSkillPoints" .. skill].textDirty = true
 
         -- Handles buttons to assign skill points
-        if shouldModifyPoints then
+        if isEditing then
             self:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
         end
     end
 end
-
 
 ---@param skill string
 ---@param skillPoints number
@@ -260,14 +259,14 @@ function DiceMenu:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
         allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
 end
 
-function DiceMenu:update()
+---@param isEditing boolean?
+function DiceMenu:update(isEditing)
     ISCollapsableWindow.update(self)
 
     local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
 
     local isAdminMode = self:getIsAdminMode()
-    local isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
-
+    if isEditing == nil then isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode() end
 
     -- Status effects panel
     self:updateStatusEffectsButton(isEditing, isAdminMode)
@@ -364,7 +363,7 @@ function DiceMenu:createBottomSection(y)
 
     local btnY = self.height - 35
 
-    if not self.playerHandler:isPlayerInitialized() or isAdmin then
+    if not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode() then
         self.btnConfirm = ISButton:new(10, btnY, 100, 25, getText("IGUI_Dice_Save"), self,
             self.onOptionMouseDown)
         self.btnConfirm.internal = "SAVE"
