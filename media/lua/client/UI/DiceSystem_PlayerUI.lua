@@ -83,7 +83,6 @@ function DiceMenu:getIsAdminMode()
     return self.isAdminMode
 end
 
-
 --* Skill Panels creation
 
 ---Add the label to a single skill panel
@@ -94,7 +93,6 @@ end
 function DiceMenu:addSkillPanelLabel(container, skill, x, frameHeight)
     CommonUI.AddSkillPanelLabel(self, container, skill, x, frameHeight)
 end
-
 
 ---@param container ISPanel
 ---@param skill string
@@ -110,7 +108,6 @@ end
 function DiceMenu:addSkillPanelPoints(container, skill)
     CommonUI.AddSkillPanelPoints(self, container, skill)
 end
-
 
 ---@param skill string
 ---@param plUsername string
@@ -129,7 +126,6 @@ function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, 
 
     return skillPanel
 end
-
 
 --- Fill the skill panel. The various buttons will be enabled ONLY for the actual player.
 function DiceMenu:fillSkillsContainer()
@@ -151,52 +147,77 @@ function DiceMenu:fillSkillsContainer()
     end
 end
 
+--* UPDATE SECTION *--
+
+
+---@param isModifying boolean
+---@param allocatedPoints number
+function DiceMenu:updateAllocatedSkillPointsPanel(isModifying, allocatedPoints)
+    if isModifying then
+        local pointsAllocatedString = getText("IGUI_SkillPointsAllocated") ..
+            string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+        self.labelSkillPointsAllocated:setName(pointsAllocatedString)
+    else
+        self.labelSkillPointsAllocated:setName("")
+    end
+end
+
+---@param isModifying boolean
+function DiceMenu:updateOccupationsButton(isModifying)
+    if isModifying then
+        local comboOcc = self.comboOccupation
+        local selectedOccupation = comboOcc:getOptionData(comboOcc.selected)
+        self.playerHandler:setOccupation(selectedOccupation)
+    else
+        self.comboOccupation.disabled = true
+    end
+end
+
+---@param isModifying boolean
+function DiceMenu:updateStatusEffectsButton(isModifying, isAdminMode)
+    -- Status effects
+    if isModifying then
+        self.comboStatusEffects.disabled = not isAdminMode
+    else
+        self.comboStatusEffects.disabled = (self.plUsername ~= self.playerHandler.username)
+    end
+end
+
+---@param isModifying boolean
+---@param allocatedPoints number
+function DiceMenu:updateBottomPanelButtons(isModifying, allocatedPoints)
+    if isModifying then
+        -- Save button
+        self.btnConfirm:setEnable(allocatedPoints == PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+    end
+end
 
 function DiceMenu:updatePanelLine(name, currVal, maxVal)
-    local panelId = "panel"..name
-    local btnPlusId = "btnPlus"..name
-    local btnMinusId = "btnMinus"..name
+    local panelId = "panel" .. name
+    local btnPlusId = "btnPlus" .. name
+    local btnMinusId = "btnMinus" .. name
 
-    self[panelId]:setText(getText("IGUI_PlayerUI_"..name, currVal, maxVal))
+    self[panelId]:setText(getText("IGUI_PlayerUI_" .. name, currVal, maxVal))
     self[panelId].textDirty = true
 
     self[btnPlusId]:setEnable(currVal < maxVal)
     self[btnMinusId]:setEnable(currVal > 0)
 end
 
+function DiceMenu:updateBonusValues()
+    -- Armor Bonus + Movement Bonus
+    local armorBonus = self.playerHandler:getArmorBonus()
+    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", armorBonus))
+    self.panelArmorBonus.textDirty = true
 
-function DiceMenu:update()
-    ISCollapsableWindow.update(self)
+    local movementBonus = self.playerHandler:getMovementBonus()
+    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", movementBonus))
+    self.panelMovementBonus.textDirty = true
+end
 
-    local isInit = self.playerHandler:isPlayerInitialized()
-    local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
-    local isAdmin = self:getIsAdminMode()
-
-    -- Show allocated points during init
-    if not isInit or isAdmin then
-        -- Points allocated label
-        local pointsAllocatedString = getText("IGUI_SkillPointsAllocated") .. string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
-        self.labelSkillPointsAllocated:setName(pointsAllocatedString)
-
-        -- Occupations
-        local comboOcc = self.comboOccupation
-        local selectedOccupation = comboOcc:getOptionData(comboOcc.selected)
-        self.playerHandler:setOccupation(selectedOccupation)
-
-        -- Status effects
-        self.comboStatusEffects.disabled = not isAdmin
-
-        -- Save button
-        self.btnConfirm:setEnable(allocatedPoints == PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
-    else
-        -- disable occupation choice and allocated skill points label if it's already initialized
-        self.comboOccupation.disabled = true
-        self.labelSkillPointsAllocated:setName("")
-
-        self.comboStatusEffects.disabled = (self.plUsername ~= self.playerHandler.username)
-        CommonUI.UpdateStatusEffectsText(self, self.plUsername)
-    end
-
+---@param allocatedPoints number
+---@param shouldModifyPoints boolean
+function DiceMenu:updateSkills(allocatedPoints, shouldModifyPoints)
     local armorBonusPoints = self.playerHandler:getArmorBonus()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -206,10 +227,12 @@ function DiceMenu:update()
         local skillPointsString = " <RIGHT> " .. string.format("%d", skillPoints)
         if bonusSkillPoints ~= 0 then
             skillPointsString = skillPointsString ..
-            string.format(" <RGB:0.94,0.82,0.09> <SPACE> + <SPACE> %d", bonusSkillPoints)
+                string.format(" <RGB:0.94,0.82,0.09> <SPACE> + <SPACE> %d", bonusSkillPoints)
         end
 
         -- Specific case for Resolve, it should scale on armor bonus
+
+        -- TODO Horrible
         if skill == "Resolve" and armorBonusPoints ~= 0 then
             skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", armorBonusPoints)
         end
@@ -219,18 +242,35 @@ function DiceMenu:update()
         self["labelSkillPoints" .. skill].textDirty = true
 
         -- Handles buttons to assign skill points
-        if not isInit or isAdmin then
+        if shouldModifyPoints then
             self["btnMinus" .. skill]:setEnable(skillPoints ~= 0)
             self["btnPlus" .. skill]:setEnable(skillPoints ~= PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS and
-            allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+                allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
         end
     end
+end
 
-    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", armorBonusPoints))
-    self.panelArmorBonus.textDirty = true
+function DiceMenu:update()
+    ISCollapsableWindow.update(self)
 
-    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", self.playerHandler:getMovementBonus()))
-    self.panelMovementBonus.textDirty = true
+    local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
+
+    local isAdminMode = self:getIsAdminMode()
+    local isModifying = self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
+
+
+    -- Status effects panel
+    self:updateStatusEffectsButton(isModifying, isAdminMode)
+
+    -- Occupations panel
+    self:updateOccupationsButton(isModifying)
+
+    -- Bar with bonus values
+    self:updateBonusValues()
+
+    -- Points allocated label
+    self:updateAllocatedSkillPointsPanel(isModifying, allocatedPoints)
+
 
     local currHealth = self.playerHandler:getCurrentHealth()
     local maxHealth = self.playerHandler:getMaxHealth()
@@ -239,6 +279,17 @@ function DiceMenu:update()
     local totMovement = self.playerHandler:getMaxMovement() + self.playerHandler:getMovementBonus()
     local currMovement = self.playerHandler:getCurrentMovement()
     self:updatePanelLine("Movement", currMovement, totMovement)
+
+    -- Update skills panel
+    self:updateSkills(allocatedPoints, isModifying)
+
+
+    -- Show allocated points during init
+    self:updateBottomPanelButtons(isModifying, allocatedPoints)
+
+    if not isModifying then
+        CommonUI.UpdateStatusEffectsText(self, self.plUsername)
+    end
 end
 
 function DiceMenu:calculateHeight(y)
@@ -247,8 +298,11 @@ function DiceMenu:calculateHeight(y)
     self:setHeight(finalheight)
 end
 
+--* END UPDATE SECTION *--
 
---* Panel creation *--
+------------------------------------
+
+--* PANELS CREATION *--
 
 
 ---@param playerName string
@@ -258,7 +312,6 @@ function DiceMenu:addNameLabel(playerName, y)
     y = CommonUI.AddCenteredTextLabel(self, "nameLabel", playerName, y)
     return y + 10
 end
-
 
 ---@param name string
 ---@param y number
@@ -295,7 +348,6 @@ function DiceMenu:createPanelLine(name, y, frameHeight)
     self[panelId]:addChild(self[btnPlusId])
 end
 
-
 function DiceMenu:createBottomSection(y)
     --* Set correct height for the panel AFTER we're done with everything else *--
     self:calculateHeight(y)
@@ -320,8 +372,6 @@ function DiceMenu:createBottomSection(y)
     self.btnClose:setEnable(true)
     self:addChild(self.btnClose)
 end
-
-
 
 function DiceMenu:createChildren()
     local yOffset = 40
@@ -452,7 +502,7 @@ function DiceMenu:createChildren()
     if not arePointsAllocated then
         local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
         local pointsAllocatedString = getText("IGUI_SkillPointsAllocated") ..
-        string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+            string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
 
         self.labelSkillPointsAllocated = ISLabel:new(
             (self.width - getTextManager():MeasureStringX(UIFont.Small, pointsAllocatedString)) / 2,
@@ -471,8 +521,10 @@ function DiceMenu:createChildren()
 
     --* Set correct height for the panel AFTER we're done with everything else *--
     self:createBottomSection(yOffset)
-    
 end
+
+--* END PANELS CREATION *--
+
 
 function DiceMenu:onChangeStatusEffect()
     local statusEffect = self.comboStatusEffects:getSelectedText():gsub("%s+", "") -- We trim it because of stuff like On Fire. We need to get OnFire

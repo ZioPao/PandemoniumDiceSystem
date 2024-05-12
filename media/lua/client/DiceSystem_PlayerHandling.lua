@@ -1,4 +1,3 @@
-
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 ----------------------
 
@@ -25,7 +24,6 @@ PlayerHandler.handlers = {}
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
-
     if PlayerHandler.handlers[username] then
         return PlayerHandler.handlers[username]
     end
@@ -49,7 +47,6 @@ function PlayerHandler:checkDiceDataValidity()
     return false
 end
 
-
 --* Initialization *--
 
 ---This is a fairly aggressive way to sync the moddata table. Use it sparingly
@@ -63,7 +60,6 @@ end
 --- Creates a new ModData for a player
 ---@param force boolean Force initializiation for the current player
 function PlayerHandler:initModData(force)
-
     --print("[DiceSystem] Initializing!")
     if self.username == nil then
         self.username = getPlayer():getUsername()
@@ -73,11 +69,11 @@ function PlayerHandler:initModData(force)
         -- Do a shallow copy of the table in Data
         ---@type diceDataType
         local tempTable = {}
-        for k,v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
+        for k, v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
             tempTable[k] = v
         end
         --print("[DiceSystem] Initializing new player dice data")
-       
+
         -- Setup status effects
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
             local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
@@ -132,7 +128,6 @@ function PlayerHandler:isPlayerInitialized()
     return isInit
 end
 
-
 --*  Skills handling *--
 
 ---Return skill points + bonus skill points
@@ -186,7 +181,7 @@ function PlayerHandler:incrementSkillPoint(skill)
     local result = false
 
     -- TODO Make this customizable from DATA
-    if self.diceData.allocatedPoints < 20 and self.diceData.skills[skill] < 5 then
+    if self.diceData.allocatedPoints < PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS and self.diceData.skills[skill] < PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS then
         self.diceData.skills[skill] = self.diceData.skills[skill] + 1
         self.diceData.allocatedPoints = self.diceData.allocatedPoints + 1
         result = true
@@ -243,7 +238,6 @@ function PlayerHandler:handleSkillPointSpecialCases(skill)
         self:applyMovementBonus(actualPoints, bonusPoints)
     end
 end
-
 
 ---Get Allocated Skill points
 ---@return integer
@@ -308,7 +302,8 @@ function PlayerHandler:toggleStatusEffectValue(statusEffect)
         userID = pl:getOnlineID()
     end
 
-    sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateStatusEffect', {username = self.username, userID = userID, statusEffect = statusEffect, isActive = isActive })
+    sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateStatusEffect',
+        { username = self.username, userID = userID, statusEffect = statusEffect, isActive = isActive })
 end
 
 ---Get the status effect value
@@ -319,7 +314,6 @@ function PlayerHandler:getStatusEffectValue(status)
     --print("Status: " .. status .. ",value: " .. tostring(val))
     return val
 end
-
 
 --* Health *--
 
@@ -377,7 +371,8 @@ function PlayerHandler:handleCurrentHealth(operation)
 
     if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
         local currentHealth = self:getCurrentHealth()
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth', {currentHealth = currentHealth, username = self.username})
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth',
+            { currentHealth = currentHealth, username = self.username })
     end
 end
 
@@ -410,7 +405,8 @@ function PlayerHandler:handleCurrentMovement(operation)
     end
 
     if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement', {currentMovement = self:getCurrentMovement(), username = self.username})
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement',
+            { currentMovement = self:getCurrentMovement(), username = self.username })
     end
 end
 
@@ -558,12 +554,11 @@ function PlayerHandler.CalculateArmorBonus(pl)
 
     -- TODO Cache old max movement before updating it
     if handler:isPlayerInitialized() then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', {armorBonus = armorBonus, username = username})
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', {maxMovement = maxMov, username = username})
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', { armorBonus = armorBonus, username = username })
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', { maxMovement = maxMov, username = username })
     end
 
     return true
-
 end
 
 ------------------------
@@ -589,6 +584,7 @@ function OnConnected()
         DICE_CLIENT_MOD_DATA = {}
     end
 end
+
 Events.OnConnected.Add(OnConnected)
 
 local function copyTable(tableA, tableB)
