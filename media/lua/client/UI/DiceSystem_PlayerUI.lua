@@ -150,10 +150,10 @@ end
 --* UPDATE SECTION *--
 
 
----@param isModifying boolean
+---@param isEditing boolean
 ---@param allocatedPoints number
-function DiceMenu:updateAllocatedSkillPointsPanel(isModifying, allocatedPoints)
-    if isModifying then
+function DiceMenu:updateAllocatedSkillPointsPanel(isEditing, allocatedPoints)
+    if isEditing then
         local pointsAllocatedString = getText("IGUI_SkillPointsAllocated") ..
             string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
         self.labelSkillPointsAllocated:setName(pointsAllocatedString)
@@ -162,9 +162,9 @@ function DiceMenu:updateAllocatedSkillPointsPanel(isModifying, allocatedPoints)
     end
 end
 
----@param isModifying boolean
-function DiceMenu:updateOccupationsButton(isModifying)
-    if isModifying then
+---@param isEditing boolean
+function DiceMenu:updateOccupationsButton(isEditing)
+    if isEditing then
         local comboOcc = self.comboOccupation
         local selectedOccupation = comboOcc:getOptionData(comboOcc.selected)
         self.playerHandler:setOccupation(selectedOccupation)
@@ -173,20 +173,22 @@ function DiceMenu:updateOccupationsButton(isModifying)
     end
 end
 
----@param isModifying boolean
-function DiceMenu:updateStatusEffectsButton(isModifying, isAdminMode)
+---@param isEditing boolean
+---@param isAdminMode boolean
+function DiceMenu:updateStatusEffectsButton(isEditing, isAdminMode)
     -- Status effects
-    if isModifying then
+    if isEditing then
+        -- when in edit mode, this must be disabled, unless it's an admin?
         self.comboStatusEffects.disabled = not isAdminMode
     else
         self.comboStatusEffects.disabled = (self.plUsername ~= self.playerHandler.username)
     end
 end
 
----@param isModifying boolean
+---@param isEditing boolean
 ---@param allocatedPoints number
-function DiceMenu:updateBottomPanelButtons(isModifying, allocatedPoints)
-    if isModifying then
+function DiceMenu:updateBottomPanelButtons(isEditing, allocatedPoints)
+    if isEditing then
         -- Save button
         self.btnConfirm:setEnable(allocatedPoints == PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
     end
@@ -264,20 +266,20 @@ function DiceMenu:update()
     local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
 
     local isAdminMode = self:getIsAdminMode()
-    local isModifying = self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
+    local isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
 
 
     -- Status effects panel
-    self:updateStatusEffectsButton(isModifying, isAdminMode)
+    self:updateStatusEffectsButton(isEditing, isAdminMode)
 
     -- Occupations panel
-    self:updateOccupationsButton(isModifying)
+    self:updateOccupationsButton(isEditing)
 
     -- Bar with bonus values
     self:updateBonusValues()
 
     -- Points allocated label
-    self:updateAllocatedSkillPointsPanel(isModifying, allocatedPoints)
+    self:updateAllocatedSkillPointsPanel(isEditing, allocatedPoints)
 
 
     local currHealth = self.playerHandler:getCurrentHealth()
@@ -289,13 +291,13 @@ function DiceMenu:update()
     self:updatePanelLine("Movement", currMovement, totMovement)
 
     -- Update skills panel
-    self:updateSkills(allocatedPoints, isModifying)
+    self:updateSkills(allocatedPoints, isEditing)
 
 
     -- Show allocated points during init
-    self:updateBottomPanelButtons(isModifying, allocatedPoints)
+    self:updateBottomPanelButtons(isEditing, allocatedPoints)
 
-    if not isModifying then
+    if not isEditing then
         CommonUI.UpdateStatusEffectsText(self, self.plUsername)
     end
 end
