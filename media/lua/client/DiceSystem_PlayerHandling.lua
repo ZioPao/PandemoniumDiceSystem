@@ -274,7 +274,7 @@ end
 ---Increment a specific skillpoint
 ---@param skill string
 ---@return boolean
-function PlayerHandler:incrementSkillPoint(skill)
+function PlayerHandler:increaseSkillPoint(skill)
     local result = false
 
     -- TODO Make this customizable from DATA
@@ -290,7 +290,7 @@ end
 ---Decrement a specific skillpoint
 ---@param skill string
 ---@return boolean
-function PlayerHandler:decrementSkillPoint(skill)
+function PlayerHandler:decreaseSkillPoint(skill)
     local result = false
 
     -- TODO Make this customizable from DATA
@@ -312,9 +312,9 @@ function PlayerHandler:handleSkillPoint(skill, operation)
     local result = false
 
     if operation == "+" then
-        result = self:incrementSkillPoint(skill)
+        result = self:increaseSkillPoint(skill)
     elseif operation == "-" then
-        result = self:decrementSkillPoint(skill)
+        result = self:decreaseSkillPoint(skill)
     end
 
     -- In case of failure, just return.
