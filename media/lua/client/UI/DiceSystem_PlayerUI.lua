@@ -546,18 +546,10 @@ function DiceMenu:onOptionMouseDown(btn)
 
     if btn.internal == "PLUS_STAT" then
         self.playerHandler:handleStat(btn.stat, "+")
-    end
-
-    if btn.internal == "MINUS_STAT" then
+    elseif btn.internal == "MINUS_STAT" then
         self.playerHandler:handleStat(btn.stat, "-")
-    end
+    elseif btn.internal == 'PLUS_SKILL' then
 
-
-
-
-
-
-    if btn.internal == 'PLUS_SKILL' then
         self.playerHandler:handleSkillPoint(btn.skill, "+")
     elseif btn.internal == 'MINUS_SKILL' then
         self.playerHandler:handleSkillPoint(btn.skill, "-")
