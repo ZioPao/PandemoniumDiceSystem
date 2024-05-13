@@ -88,6 +88,14 @@ end
 --* Player updates functions
 -- These can be run after a player has been initialized
 
+---@param args { stat : string, currentVal : string, username : string}
+function ModDataCommands.UpdateCurrentStat(_, args)
+	local currentVal = args.currentVal
+	local stat = args.stat
+	PlayersDiceData[args.username]['current' .. stat] = currentVal
+end
+
+
 function ModDataCommands.UpdateCurrentHealth(_, args)
 	local currentHealth = args.currentHealth
 	PlayersDiceData[args.username].currentHealth = currentHealth
@@ -104,8 +112,8 @@ function ModDataCommands.UpdateMaxMovement(_, args)
 end
 
 function ModDataCommands.UpdateMovementBonus(_, args)
-	local movementBonus = args.movementBonus
-	PlayersDiceData[args.username].movementBonus = movementBonus
+	local movementBonus = args.bonusMovement
+	PlayersDiceData[args.username].bonusMovement = movementBonus
 end
 
 function ModDataCommands.UpdateArmorBonus(_, args)

@@ -62,11 +62,11 @@ PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE = {
 
     currentHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
     maxHealth = PLAYER_DICE_VALUES.DEFAULT_HEALTH,
-    armorBonus = 0,
+    bonusArmor = 0,
 
     currentMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
     maxMovement = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT,
-    movementBonus = 0,
+    bonusMovement = 0,
 
     allocatedPoints = 0,
 

@@ -6,7 +6,7 @@ local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 ---@alias skillsTabType {}
 ---@alias skillsBonusTabType {}
 
----@alias diceDataType {isInitialized : boolean, occupation : string, statusEffects : statusEffectsType, currentHealth : number, maxHealth : number, armorBonus : number, currentMovement : number, maxMovement : number, movementBonus : number, allocatedPoints : number, skills : skillsTabType, skillsBonus : skillsBonusTabType}
+---@alias diceDataType {isInitialized : boolean, occupation : string, statusEffects : statusEffectsType, currentHealth : number, maxHealth : number, armorBonus : number, currentMovement : number, maxMovement : number, bonusMovement : number, allocatedPoints : number, skills : skillsTabType, skillsBonus : skillsBonusTabType}
 
 -- Player data saved locally here
 
@@ -315,6 +315,77 @@ function PlayerHandler:getStatusEffectValue(status)
     return val
 end
 
+
+
+--* Generic Stat Handling *--
+--[[
+    Stats can be Health or Movement in this version
+]]
+
+
+---Some stat could have a bonus value, some others don't
+---@param stat string
+---@return number
+function PlayerHandler:getBonusStat(stat)
+    local bonusStatStr = "bonus" .. stat
+
+    if self.diceData[bonusStatStr] then
+        return self.diceData[bonusStatStr]
+    end
+
+    return 0
+end
+
+
+---@param stat string
+---@return boolean
+function PlayerHandler:increaseStat(stat)
+
+    local currStatStr = "current" .. stat
+    local maxStatStr = "max" .. stat
+
+    if self.diceData[currStatStr] < self.diceData[maxStatStr] + self:getBonusStat(stat) then
+        self.diceData[currStatStr] = self.diceData[currStatStr] + 1
+        return true
+    end
+
+    return false
+end
+
+function PlayerHandler:decreaseStat(stat)
+    local currStatStr = "current" .. stat
+
+    if self.diceData[currStatStr] > 0 then
+        self.diceData[currStatStr] = self.diceData[currStatStr] - 1
+        return true
+    end
+
+    return false
+end
+
+
+---@param stat string
+---@param operation string
+function PlayerHandler:handleStat(stat, operation)
+    local result = false
+
+
+    if operation == "+" then
+        result = self:increaseStat(stat)
+    elseif operation == "-" then
+        result = self:decreaseStat(stat)
+    end
+
+    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
+
+        local currStatStr = "current" .. stat
+        local currentVal = self.diceData[currStatStr]
+
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentStat', { stat = stat, currentVal = currentVal, username = self.username})
+    end
+end
+
+
 --* Health *--
 
 ---Returns current health
@@ -337,78 +408,8 @@ function PlayerHandler:getMaxHealth()
     return -1
 end
 
----Increments the current health
----@return boolean
-function PlayerHandler:incrementCurrentHealth()
-    if self.diceData.currentHealth < self.diceData.maxHealth then
-        self.diceData.currentHealth = self.diceData.currentHealth + 1
-        return true
-    end
-
-    return false
-end
-
----Decrement the health
----@return boolean
-function PlayerHandler:decrementCurrentHealth()
-    if self.diceData.currentHealth > 0 then
-        self.diceData.currentHealth = self.diceData.currentHealth - 1
-        return true
-    end
-
-    return false
-end
-
----Modifies current health
----@param operation char
-function PlayerHandler:handleCurrentHealth(operation)
-    local result = false
-    if operation == "+" then
-        result = self:incrementCurrentHealth()
-    elseif operation == "-" then
-        result = self:decrementCurrentHealth()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
-        local currentHealth = self:getCurrentHealth()
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth',
-            { currentHealth = currentHealth, username = self.username })
-    end
-end
 
 --* Movement *--
-
-
-function PlayerHandler:incrementCurrentMovement()
-    if self.diceData.currentMovement < self.diceData.maxMovement + self.diceData.movementBonus then
-        self.diceData.currentMovement = self.diceData.currentMovement + 1
-        return true
-    end
-
-    return false
-end
-
-function PlayerHandler:decrementCurrentMovement()
-    if self.diceData.currentMovement > 0 then
-        self.diceData.currentMovement = self.diceData.currentMovement - 1
-        return true
-    end
-    return false
-end
-
-function PlayerHandler:handleCurrentMovement(operation)
-    local result = false
-    if operation == "+" then
-        result = self:incrementCurrentMovement()
-    elseif operation == "-" then
-        result = self:decrementCurrentMovement()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement',
-            { currentMovement = self:getCurrentMovement(), username = self.username })
-    end
-end
 
 ---Returns current movmenet
 ---@return number
@@ -439,14 +440,14 @@ end
 ---@param bonusPoints number
 function PlayerHandler:applyMovementBonus(points, bonusPoints)
     local movBonus = math.floor((points + bonusPoints) / 2)
-    DICE_CLIENT_MOD_DATA[self.username].movementBonus = movBonus
+    DICE_CLIENT_MOD_DATA[self.username].bonusMovement = movBonus
 end
 
 ---Get the movement bonus
 ---@return number
 function PlayerHandler:getMovementBonus()
     if self:checkDiceDataValidity() then
-        return DICE_CLIENT_MOD_DATA[self.username].movementBonus
+        return DICE_CLIENT_MOD_DATA[self.username].bonusMovement
     end
 
     return -1
