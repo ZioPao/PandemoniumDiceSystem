@@ -42,9 +42,10 @@ function PlayerHandler:checkDiceDataValidity()
     if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
         self.diceData = DICE_CLIENT_MOD_DATA[self.username]
         return true
+    else
+        print("DICE_CLIENT_MOD_DATA is unavailable for " .. self.username)
+        return false
     end
-
-    return false
 end
 
 --* Initialization *--
@@ -127,6 +128,98 @@ function PlayerHandler:isPlayerInitialized()
 
     return isInit
 end
+
+
+
+--* Generic Stat Handling *--
+--[[
+    Stats can be Health or Movement in this version
+
+    Unfortunately, we should have had a table to handle currentValues and maxValues for stats
+    instead of putting them directly into DiceData. It would have made things a lot more clean,
+    but it is how it is.
+]]
+
+
+---@param stat string
+---@return integer
+function PlayerHandler:getCurrentStat(stat)
+    if not self:checkDiceDataValidity() then return -1 end
+    return DICE_CLIENT_MOD_DATA[self.username]["current"..stat]
+end
+
+---@param stat string
+---@return integer
+function PlayerHandler:getMaxStat(stat)
+    if not self:checkDiceDataValidity() then return -1 end
+    return DICE_CLIENT_MOD_DATA[self.username]["max"..stat]
+end
+
+---Some stat could have a bonus value, some others don't
+---@param stat string
+---@return number
+function PlayerHandler:getBonusStat(stat)
+    if not self:checkDiceDataValidity() then return -1 end
+
+    local bonusStatStr = string.lower(stat) .. "Bonus"
+    if self.diceData[bonusStatStr] then
+        return self.diceData[bonusStatStr]
+    end
+
+    return 0
+end
+
+---@param stat string
+---@return boolean
+function PlayerHandler:increaseStat(stat)
+
+    local currStatStr = "current" .. stat
+    local maxStatStr = "max" .. stat
+
+    if self.diceData[currStatStr] < self.diceData[maxStatStr] + self:getBonusStat(stat) then
+        self.diceData[currStatStr] = self.diceData[currStatStr] + 1
+        return true
+    end
+
+    return false
+end
+
+function PlayerHandler:decreaseStat(stat)
+    local currStatStr = "current" .. stat
+
+    if self.diceData[currStatStr] > 0 then
+        self.diceData[currStatStr] = self.diceData[currStatStr] - 1
+        return true
+    end
+
+    return false
+end
+
+---@param stat string
+---@param operation string
+function PlayerHandler:handleStat(stat, operation)
+    local result = false
+
+
+    if operation == "+" then
+        result = self:increaseStat(stat)
+    elseif operation == "-" then
+        result = self:decreaseStat(stat)
+    end
+
+    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
+
+        local currStatStr = "current" .. stat
+        local currentVal = self.diceData[currStatStr]
+
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentStat', { stat = stat, currentVal = currentVal, username = self.username})
+    end
+end
+
+
+
+
+
 
 --*  Skills handling *--
 
@@ -257,11 +350,10 @@ end
 ---@return string
 function PlayerHandler:getOccupation()
     -- This is used in the prerender for our special combobox. We'll add a bit of added logic to be sure that it doesn't break
-    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
-        return DICE_CLIENT_MOD_DATA[self.username].occupation
-    end
-
-    return ""
+    if not self:checkDiceDataValidity() then return "" end
+        
+    return DICE_CLIENT_MOD_DATA[self.username].occupation
+    
 end
 
 ---Set an occupation and its related bonuses
@@ -320,118 +412,35 @@ end
 ---Returns current health
 ---@return number
 function PlayerHandler:getCurrentHealth()
-    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
-        return DICE_CLIENT_MOD_DATA[self.username].currentHealth
-    end
-
-    return -1
+    return self:getCurrentStat("Health")
 end
 
 ---Returns max health
 ---@return number
 function PlayerHandler:getMaxHealth()
-    if DICE_CLIENT_MOD_DATA and self.username and DICE_CLIENT_MOD_DATA[self.username] then
-        return DICE_CLIENT_MOD_DATA[self.username].maxHealth
-    end
-
-    return -1
+    return self:getMaxStat("Health")
 end
 
----Increments the current health
----@return boolean
-function PlayerHandler:incrementCurrentHealth()
-    if self.diceData.currentHealth < self.diceData.maxHealth then
-        self.diceData.currentHealth = self.diceData.currentHealth + 1
-        return true
-    end
 
-    return false
-end
-
----Decrement the health
----@return boolean
-function PlayerHandler:decrementCurrentHealth()
-    if self.diceData.currentHealth > 0 then
-        self.diceData.currentHealth = self.diceData.currentHealth - 1
-        return true
-    end
-
-    return false
-end
-
----Modifies current health
----@param operation char
-function PlayerHandler:handleCurrentHealth(operation)
-    local result = false
-    if operation == "+" then
-        result = self:incrementCurrentHealth()
-    elseif operation == "-" then
-        result = self:decrementCurrentHealth()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
-        local currentHealth = self:getCurrentHealth()
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentHealth',
-            { currentHealth = currentHealth, username = self.username })
-    end
-end
 
 --* Movement *--
-
-
-function PlayerHandler:incrementCurrentMovement()
-    if self.diceData.currentMovement < self.diceData.maxMovement + self.diceData.movementBonus then
-        self.diceData.currentMovement = self.diceData.currentMovement + 1
-        return true
-    end
-
-    return false
-end
-
-function PlayerHandler:decrementCurrentMovement()
-    if self.diceData.currentMovement > 0 then
-        self.diceData.currentMovement = self.diceData.currentMovement - 1
-        return true
-    end
-    return false
-end
-
-function PlayerHandler:handleCurrentMovement(operation)
-    local result = false
-    if operation == "+" then
-        result = self:incrementCurrentMovement()
-    elseif operation == "-" then
-        result = self:decrementCurrentMovement()
-    end
-
-    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateCurrentMovement',
-            { currentMovement = self:getCurrentMovement(), username = self.username })
-    end
-end
 
 ---Returns current movmenet
 ---@return number
 function PlayerHandler:getCurrentMovement()
-    if self:checkDiceDataValidity() then
-        return DICE_CLIENT_MOD_DATA[self.username].currentMovement
-    end
-
-    return -1
-end
-
-function PlayerHandler:setCurrentMovement(movement)
-    DICE_CLIENT_MOD_DATA[self.username].currentMovement = movement
+    return self:getCurrentStat("Movement")
 end
 
 ---Returns the max movement value
 ---@return number
 function PlayerHandler:getMaxMovement()
-    if self:checkDiceDataValidity() then
-        return DICE_CLIENT_MOD_DATA[self.username].maxMovement
-    end
+    return self:getMaxStat("Movement")
+end
 
-    return -1
+---Get the movement bonus
+---@return number
+function PlayerHandler:getMovementBonus()
+    return self:getBonusStat("Movement")
 end
 
 ---Set the correct Movement Bonus to the player data
@@ -442,14 +451,8 @@ function PlayerHandler:applyMovementBonus(points, bonusPoints)
     DICE_CLIENT_MOD_DATA[self.username].movementBonus = movBonus
 end
 
----Get the movement bonus
----@return number
-function PlayerHandler:getMovementBonus()
-    if self:checkDiceDataValidity() then
-        return DICE_CLIENT_MOD_DATA[self.username].movementBonus
-    end
-
-    return -1
+function PlayerHandler:setCurrentMovement(movement)
+    DICE_CLIENT_MOD_DATA[self.username].currentMovement = movement
 end
 
 ---Set the new correct max movement
@@ -468,11 +471,7 @@ end
 --- Returns the current value of armor bonus
 ---@return number
 function PlayerHandler:getArmorBonus()
-    if DICE_CLIENT_MOD_DATA and DICE_CLIENT_MOD_DATA[self.username] then
-        return DICE_CLIENT_MOD_DATA[self.username].armorBonus
-    end
-
-    return -1
+    return self:getBonusStat("Armor")
 end
 
 -----------------------

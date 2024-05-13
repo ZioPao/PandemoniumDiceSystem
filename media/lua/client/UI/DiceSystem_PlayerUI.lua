@@ -338,7 +338,8 @@ function DiceMenu:createPanelLine(name, y, frameHeight)
     --LEFT MINUS BUTTON
     local btnMinusId = "btnMinus" .. name
     self[btnMinusId] = ISButton:new(0, 0, self.width / 4, frameHeight, "-", self, self.onOptionMouseDown)
-    self[btnMinusId].internal = "MINUS_" .. upperName
+    self[btnMinusId].internal = "MINUS_STAT"
+    self[btnMinusId].stat = name
     self[btnMinusId].borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
     self[btnMinusId]:initialise()
     self[btnMinusId]:instantiate()
@@ -350,7 +351,8 @@ function DiceMenu:createPanelLine(name, y, frameHeight)
     self[btnPlusId] = ISButton:new(self.width / 1.333, 0, self.width / 4, frameHeight, "+", self,
         self.onOptionMouseDown)
     self[btnPlusId].borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
-    self[btnPlusId].internal = "PLUS_" .. upperName
+    self[btnPlusId].internal = "PLUS_STAT"
+    self[btnPlusId].stat = name
     self[btnPlusId]:initialise()
     self[btnPlusId]:instantiate()
     self[btnPlusId]:setEnable(true)
@@ -541,14 +543,11 @@ function DiceMenu:onChangeStatusEffect()
 end
 
 function DiceMenu:onOptionMouseDown(btn)
-    if btn.internal == 'PLUS_HEALTH' then
-        self.playerHandler:handleCurrentHealth("+")
-    elseif btn.internal == 'MINUS_HEALTH' then
-        self.playerHandler:handleCurrentHealth("-")
-    elseif btn.internal == 'PLUS_MOVEMENT' then
-        self.playerHandler:handleCurrentMovement("+")
-    elseif btn.internal == 'MINUS_MOVEMENT' then
-        self.playerHandler:handleCurrentMovement("-")
+
+    if btn.internal == "PLUS_STAT" then
+        self.playerHandler:handleStat(btn.stat, "+")
+    elseif btn.internal == "MINUS_STAT" then
+        self.playerHandler:handleStat(btn.stat, "-")
     elseif btn.internal == 'PLUS_SKILL' then
         self.playerHandler:handleSkillPoint(btn.skill, "+")
     elseif btn.internal == 'MINUS_SKILL' then
