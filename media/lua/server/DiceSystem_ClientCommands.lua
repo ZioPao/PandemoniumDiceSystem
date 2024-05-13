@@ -112,8 +112,8 @@ function ModDataCommands.UpdateMaxMovement(_, args)
 end
 
 function ModDataCommands.UpdateMovementBonus(_, args)
-	local movementBonus = args.bonusMovement
-	PlayersDiceData[args.username].bonusMovement = movementBonus
+	local movementBonus = args.movementBonus
+	PlayersDiceData[args.username].movementBonus = movementBonus
 end
 
 function ModDataCommands.UpdateArmorBonus(_, args)
