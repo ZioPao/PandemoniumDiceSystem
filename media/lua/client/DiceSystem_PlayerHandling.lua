@@ -347,8 +347,9 @@ end
 ---@param stat string
 ---@return number
 function PlayerHandler:getBonusStat(stat)
-    local bonusStatStr = string.lower(stat) .. "Bonus"
+    if not PlayerHandler:checkDiceDataValidity() then return -1 end
 
+    local bonusStatStr = string.lower(stat) .. "Bonus"
     if self.diceData[bonusStatStr] then
         return self.diceData[bonusStatStr]
     end
