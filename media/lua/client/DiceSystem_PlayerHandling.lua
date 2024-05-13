@@ -169,6 +169,18 @@ function PlayerHandler:getBonusStat(stat)
     return 0
 end
 
+
+---@param stat string
+---@param val number
+function PlayerHandler:setBonusStat(stat, val)
+    if not self:checkDiceDataValidity() then return end
+    local bonusStatStr = string.lower(stat) .. "Bonus"
+
+    DICE_CLIENT_MOD_DATA[self.username][bonusStatStr] = val
+end
+
+
+
 ---@param stat string
 ---@return boolean
 function PlayerHandler:increaseStat(stat)
@@ -322,7 +334,7 @@ function PlayerHandler:handleSkillPointSpecialCases(skill)
     if skill == 'Deft' then
         local actualPoints = self:getSkillPoints(skill)
         local bonusPoints = self:getBonusSkillPoints(skill)
-        self:applyMovementBonus(actualPoints, bonusPoints)
+        self:setMovementBonus(actualPoints, bonusPoints)
     end
 end
 
@@ -434,9 +446,9 @@ end
 ---Set the correct Movement Bonus to the player data
 ---@param points number
 ---@param bonusPoints number
-function PlayerHandler:applyMovementBonus(points, bonusPoints)
+function PlayerHandler:setMovementBonus(points, bonusPoints)
     local movBonus = math.floor((points + bonusPoints) / 2)
-    DICE_CLIENT_MOD_DATA[self.username].movementBonus = movBonus
+    self:setBonusStat("Movement", movBonus)
 end
 
 function PlayerHandler:setCurrentMovement(movement)
