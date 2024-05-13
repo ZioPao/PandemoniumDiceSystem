@@ -1,13 +1,9 @@
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 ----------------------
 
-
-
--- TODO Migrate to instantiating the Handler instead of having it a static class
 ---@alias statusEffectsType {}
 ---@alias skillsTabType {}
 ---@alias skillsBonusTabType {}
-
 ---@alias diceDataType {isInitialized : boolean, occupation : string, statusEffects : statusEffectsType, currentHealth : number, maxHealth : number, armorBonus : number, currentMovement : number, maxMovement : number, movementBonus : number, allocatedPoints : number, skills : skillsTabType, skillsBonus : skillsBonusTabType}
 
 -- Player data saved locally here

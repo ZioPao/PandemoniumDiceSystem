@@ -1,8 +1,18 @@
 
 -------------
-
+---@class DiceSystem_ComboBox : ISComboBox
+---@field playerHandler PlayerHandler
 DiceSystem_ComboBox = ISComboBox:derive("DiceSystem_ComboBox")
+
+
 DiceSystem_ComboBoxOccupationPopup = ISComboBoxPopup:derive("DiceSystem_ComboBoxOccupationPopup")
+
+
+
+
+
+---@class DiceSystem_ComboBoxStatusPopup : ISComboBoxPopup
+---@field playerHandler PlayerHandler
 DiceSystem_ComboBoxStatusPopup = ISComboBoxPopup:derive("DiceSystem_ComboBoxStatusPopup")
 
 function DiceSystem_ComboBoxOccupationPopup:doDrawItem(y, item, alt)
@@ -98,10 +108,10 @@ function DiceSystem_ComboBoxStatusPopup:doDrawItem(y, item, alt)
 end
 
 ---Creates the combo box for the occupations
----@param x any
----@param y any
----@param width any
----@param height any
+---@param x number
+---@param y number
+---@param width number
+---@param height number
 ---@param playerHandler PlayerHandler
 ---@return ISComboBoxPopup
 function DiceSystem_ComboBoxStatusPopup:new(x, y, width, height, playerHandler)
