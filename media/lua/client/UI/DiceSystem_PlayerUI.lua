@@ -552,17 +552,9 @@ function DiceMenu:onChangeStatusEffect()
 end
 
 function DiceMenu:onOptionMouseDown(btn)
-
-    if btn.internal == "PLUS_STAT" then
-        self.playerHandler:handleStat(btn.stat, "+")
-    elseif btn.internal == "MINUS_STAT" then
-        self.playerHandler:handleStat(btn.stat, "-")
-    elseif btn.internal == 'PLUS_SKILL' then
-
-        self.playerHandler:handleSkillPoint(btn.skill, "+")
-    elseif btn.internal == 'MINUS_SKILL' then
-        self.playerHandler:handleSkillPoint(btn.skill, "-")
-    elseif btn.internal == 'SKILL_ROLL' then
+    CommonUI.HandleButtons(btn, self.playerHandler)
+    
+    if btn.internal == 'SKILL_ROLL' then
         local points = self.playerHandler:getFullSkillPoints(btn.skill)
         DiceSystem_Common.Roll(btn.skill, points)
     elseif btn.internal == 'SAVE' then
@@ -572,7 +564,7 @@ function DiceMenu:onOptionMouseDown(btn)
         -- If we're editing stuff from the admin, we want to be able to notify the other client to update their stats from the server
         if self:getIsAdminMode() then
             print("ADMIN MODE! Sending notification to other client")
-            local receivingPl = getPlayerFromUsername(self.playerHandler.username)
+            local receivingPl = getPlayerFromUsername(ph.username)
             sendClientCommand(DICE_SYSTEM_MOD_STRING, 'NotifyAdminChangedClientData',
                 { userID = receivingPl:getOnlineID() })
         end

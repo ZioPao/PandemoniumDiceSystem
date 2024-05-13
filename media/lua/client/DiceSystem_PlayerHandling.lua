@@ -59,6 +59,30 @@ local function SyncPlayerTable(username)
         { data = DICE_CLIENT_MOD_DATA[username], username = username })
 end
 
+---@return diceDataType
+function PlayerHandler:setupModDataTable()
+    ---@type diceDataType
+    local tempTable = {}
+    for k, v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
+        tempTable[k] = v
+    end
+    --print("[DiceSystem] Initializing new player dice data")
+
+    -- Setup status effects
+    for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
+        local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
+        tempTable.statusEffects[x] = false
+    end
+
+    -- Setup skills
+    for i = 1, #PLAYER_DICE_VALUES.SKILLS do
+        local x = PLAYER_DICE_VALUES.SKILLS[i]
+        tempTable.skills[x] = 0
+        tempTable.skillsBonus[x] = 0
+    end
+
+    return tempTable
+end
 
 --- Creates a new ModData for a player
 ---@param force boolean Force initializiation for the current player
@@ -70,28 +94,9 @@ function PlayerHandler:initModData(force)
     -- This should happen only from that specific player, not an admin
     if (DICE_CLIENT_MOD_DATA ~= nil and DICE_CLIENT_MOD_DATA[self.username] == nil) or force then
         -- Do a shallow copy of the table in Data
-        ---@type diceDataType
-        local tempTable = {}
-        for k, v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
-            tempTable[k] = v
-        end
-        --print("[DiceSystem] Initializing new player dice data")
-
-        -- Setup status effects
-        for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
-            local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
-            tempTable.statusEffects[x] = false
-        end
-
-        -- Setup skills
-        for i = 1, #PLAYER_DICE_VALUES.SKILLS do
-            local x = PLAYER_DICE_VALUES.SKILLS[i]
-            tempTable.skills[x] = 0
-            tempTable.skillsBonus[x] = 0
-        end
 
 
-        --PlayerStatsHandler.CalcualteArmorClass(getPlayer())
+        local tempTable = self:setupModDataTable()
 
         DICE_CLIENT_MOD_DATA[self.username] = {}
         copyTable(DICE_CLIENT_MOD_DATA[self.username], tempTable)
@@ -169,7 +174,6 @@ function PlayerHandler:getBonusStat(stat)
     return 0
 end
 
-
 ---@param stat string
 ---@param val number
 function PlayerHandler:setBonusStat(stat, val)
@@ -178,8 +182,6 @@ function PlayerHandler:setBonusStat(stat, val)
 
     DICE_CLIENT_MOD_DATA[self.username][bonusStatStr] = val
 end
-
-
 
 ---@param stat string
 ---@return boolean

@@ -249,6 +249,24 @@ function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeCol
 end
 
 
+--* BUTTON LOGIC *--
+
+
+---@param btn ISButton
+---@param ph PlayerHandler
+function DiceCommonUI.HandleButtons(btn, ph)
+    if btn.internal == "PLUS_STAT" then
+        ph:handleStat(btn.stat, "+")
+    elseif btn.internal == "MINUS_STAT" then
+        ph:handleStat(btn.stat, "-")
+    elseif btn.internal == 'PLUS_SKILL' then
+        ph:handleSkillPoint(btn.skill, "+")
+    elseif btn.internal == 'MINUS_SKILL' then
+        ph:handleSkillPoint(btn.skill, "-")
+    end
+
+end
+
 
 --* UPDATE LOGIC *--
 
