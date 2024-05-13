@@ -38,6 +38,7 @@ local CommonUI = require("UI/DiceSystem_CommonUI")
 
 ---@class DiceMenu : ISCollapsableWindow
 ---@field playerHandler PlayerHandler
+---@field isEditing boolean
 local DiceMenu = ISCollapsableWindow:derive("DiceMenu")
 DiceMenu.instance = nil
 
@@ -49,7 +50,7 @@ DiceMenu.instance = nil
 ---@param width number
 ---@param height number
 ---@param playerHandler PlayerHandler
----@return ISCollapsableWindow
+---@return DiceMenu
 function DiceMenu:new(x, y, width, height, playerHandler)
     local o = {}
     o = ISCollapsableWindow:new(x, y, width, height)
@@ -68,9 +69,14 @@ function DiceMenu:new(x, y, width, height, playerHandler)
     o.playerHandler = playerHandler
     o.plUsername = getPlayer():getUsername() -- TODO optimize this
 
-
     DiceMenu.instance = o
     return o
+end
+
+---Setup initialization for the menu. Set isEditing var for future setup
+function DiceMenu:initialise()
+    ISCollapsableWindow.initialise(self)
+    self.isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
 end
 
 --* Setters and getters*--
@@ -129,12 +135,12 @@ function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, 
 end
 
 --- Fill the skill panel. The various buttons will be enabled ONLY for the actual player.
+
 function DiceMenu:fillSkillsContainer()
     local yOffset = 0
     local frameHeight = 40
 
     print("Filling skill container")
-    local isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
     local plUsername = getPlayer():getUsername()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -142,7 +148,7 @@ function DiceMenu:fillSkillsContainer()
 
         -- TODO Fix warning
 
-        local skillPanel = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, isEditing, yOffset, frameHeight)
+        local skillPanel = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, self.isEditing, yOffset, frameHeight)
         yOffset = yOffset + frameHeight
 
         self.skillsPanelContainer:addChild(skillPanel)
@@ -153,10 +159,9 @@ end
 --* UPDATE SECTION *--
 
 
----@param isEditing boolean
 ---@param allocatedPoints number
-function DiceMenu:updateAllocatedSkillPointsPanel(isEditing, allocatedPoints)
-    if isEditing then
+function DiceMenu:updateAllocatedSkillPointsPanel(allocatedPoints)
+    if self.isEditing then
         local pointsAllocatedString = getText("IGUI_SkillPointsAllocated") ..
             string.format(" %d/%d", allocatedPoints, PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
         self.labelSkillPointsAllocated:setName(pointsAllocatedString)
@@ -165,9 +170,8 @@ function DiceMenu:updateAllocatedSkillPointsPanel(isEditing, allocatedPoints)
     end
 end
 
----@param isEditing boolean
-function DiceMenu:updateOccupationsButton(isEditing)
-    if isEditing then
+function DiceMenu:updateOccupationsButton()
+    if self.isEditing then
         local comboOcc = self.comboOccupation
         local selectedOccupation = comboOcc:getOptionData(comboOcc.selected)
         self.playerHandler:setOccupation(selectedOccupation)
@@ -176,11 +180,10 @@ function DiceMenu:updateOccupationsButton(isEditing)
     end
 end
 
----@param isEditing boolean
 ---@param isAdminMode boolean
-function DiceMenu:updateStatusEffectsButton(isEditing, isAdminMode)
+function DiceMenu:updateStatusEffectsButton(isAdminMode)
     -- Status effects
-    if isEditing then
+    if self.isEditing then
         -- when in edit mode, this must be disabled, unless it's an admin?
         self.comboStatusEffects.disabled = not isAdminMode
     else
@@ -188,10 +191,9 @@ function DiceMenu:updateStatusEffectsButton(isEditing, isAdminMode)
     end
 end
 
----@param isEditing boolean
 ---@param allocatedPoints number
-function DiceMenu:updateBottomPanelButtons(isEditing, allocatedPoints)
-    if isEditing then
+function DiceMenu:updateBottomPanelButtons(allocatedPoints)
+    if self.isEditing then
         -- Save button
         self.btnConfirm:setEnable(allocatedPoints == PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
     end
@@ -221,8 +223,7 @@ function DiceMenu:updateBonusValues()
 end
 
 ---@param allocatedPoints number
----@param isEditing boolean
-function DiceMenu:updateSkills(allocatedPoints, isEditing)
+function DiceMenu:updateSkills(allocatedPoints)
     local armorBonusPoints = self.playerHandler:getArmorBonus()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -247,7 +248,7 @@ function DiceMenu:updateSkills(allocatedPoints, isEditing)
         self["labelSkillPoints" .. skill].textDirty = true
 
         -- Handles buttons to assign skill points
-        if isEditing then
+        if self.isEditing then
             self:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
         end
     end
@@ -264,30 +265,24 @@ function DiceMenu:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
     CommonUI.UpdateBtnSkillModifier(self, skill, enableMinus, enablePlus)
 end
 
----@param isEditing boolean?
-function DiceMenu:update(isEditing)
+function DiceMenu:update()
     ISCollapsableWindow.update(self)
 
     local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
 
     local isAdminMode = self:getIsAdminMode()
-    if isEditing == nil then
-        --print('isEditing is nil, creating it')
-        isEditing = (not self.playerHandler:isPlayerInitialized()) or self:getIsAdminMode()
-        --print(tostring(isEditing))
-    end
 
     -- Status effects panel
-    self:updateStatusEffectsButton(isEditing, isAdminMode)
+    self:updateStatusEffectsButton(isAdminMode)
 
     -- Occupations panel
-    self:updateOccupationsButton(isEditing)
+    self:updateOccupationsButton()
 
     -- Bar with bonus values
     self:updateBonusValues()
 
     -- Points allocated label
-    self:updateAllocatedSkillPointsPanel(isEditing, allocatedPoints)
+    self:updateAllocatedSkillPointsPanel(allocatedPoints)
 
 
     local currHealth = self.playerHandler:getCurrentHealth()
@@ -299,13 +294,13 @@ function DiceMenu:update(isEditing)
     self:updatePanelLine("Movement", currMovement, totMovement)
 
     -- Update skills panel
-    self:updateSkills(allocatedPoints, isEditing)
+    self:updateSkills(allocatedPoints)
 
 
     -- Show allocated points during init
-    self:updateBottomPanelButtons(isEditing, allocatedPoints)
+    self:updateBottomPanelButtons(allocatedPoints)
 
-    if not isEditing then
+    if not self.isEditing then
         CommonUI.UpdateStatusEffectsText(self, self.plUsername)
     end
 end
@@ -368,13 +363,15 @@ function DiceMenu:createPanelLine(name, y, frameHeight)
     self[panelId]:addChild(self[btnPlusId])
 end
 
+
+---@param y number
 function DiceMenu:createBottomSection(y)
     --* Set correct height for the panel AFTER we're done with everything else *--
     self:calculateHeight(y)
 
     local btnY = self.height - 35
 
-    if not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode() then
+    if self.isEditing then
         self.btnConfirm = ISButton:new(10, btnY, 100, 25, getText("IGUI_Dice_Save"), self,
             self.onOptionMouseDown)
         self.btnConfirm.internal = "SAVE"
@@ -392,6 +389,7 @@ function DiceMenu:createBottomSection(y)
     self.btnClose:setEnable(true)
     self:addChild(self.btnClose)
 end
+
 
 function DiceMenu:createChildren()
     local yOffset = 40
@@ -537,6 +535,9 @@ function DiceMenu:createChildren()
 
     self.skillsPanelContainer = ISPanel:new(0, yOffset, self.width, 0) --Height doesn't really matter, but we will set in fillSkillPanel
     self:addChild(self.skillsPanelContainer)
+
+
+
     self:fillSkillsContainer()
 
     --* Set correct height for the panel AFTER we're done with everything else *--

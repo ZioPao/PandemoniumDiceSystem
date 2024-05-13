@@ -572,7 +572,7 @@ Events.OnClothingUpdated.Add(PlayerHandler.CalculateArmorBonus)
 --* Global mod data *--
 
 ---Ask ModData from server
-function OnConnected()
+local function OnConnected()
     print("Requested global mod data")
     ModData.request(DICE_SYSTEM_MOD_STRING)
     DICE_CLIENT_MOD_DATA = ModData.get(DICE_SYSTEM_MOD_STRING)
