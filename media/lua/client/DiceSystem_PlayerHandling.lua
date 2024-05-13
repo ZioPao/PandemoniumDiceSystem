@@ -1,6 +1,8 @@
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
 ----------------------
 
+
+
 -- TODO Migrate to instantiating the Handler instead of having it a static class
 ---@alias statusEffectsType {}
 ---@alias skillsTabType {}
@@ -407,7 +409,7 @@ function PlayerHandler:getStatusEffectValue(status)
     return val
 end
 
---* Health *--
+
 
 ---Returns current health
 ---@return number
@@ -415,11 +417,21 @@ function PlayerHandler:getCurrentHealth()
     return self:getCurrentStat("Health")
 end
 
----Returns max health
+---@param stat string
+---@return integer
+function PlayerHandler:getMaxStat(stat)
+    if not PlayerHandler:checkDiceDataValidity() then return -1 end
+    return DICE_CLIENT_MOD_DATA[self.username]["max"..stat]
+end
+
+---Some stat could have a bonus value, some others don't
+---@param stat string
 ---@return number
+
 function PlayerHandler:getMaxHealth()
     return self:getMaxStat("Health")
 end
+
 
 
 
@@ -430,12 +442,12 @@ end
 function PlayerHandler:getCurrentMovement()
     return self:getCurrentStat("Movement")
 end
-
 ---Returns the max movement value
 ---@return number
 function PlayerHandler:getMaxMovement()
     return self:getMaxStat("Movement")
 end
+
 
 ---Get the movement bonus
 ---@return number
