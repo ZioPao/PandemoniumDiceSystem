@@ -96,17 +96,18 @@ end
 
 ---@param container ISPanel
 ---@param skill string
----@param isInitialized boolean
+---@param isEditing boolean
 ---@param frameHeight number
 ---@param plUsername string
-function DiceMenu:addSkillPanelButtons(container, skill, isInitialized, frameHeight, plUsername)
-    CommonUI.AddSkillPanelButtons(self, container, skill, isInitialized, frameHeight, plUsername)
+function DiceMenu:addSkillPanelButtons(container, skill, isEditing, frameHeight, plUsername)
+    local ph = self.playerHandler
+    CommonUI.AddSkillPanelButtons(self, container, ph, skill, isEditing, frameHeight, plUsername)
 end
 
 ---@param container ISPanel
 ---@param skill string
 function DiceMenu:addSkillPanelPoints(container, skill)
-    CommonUI.AddSkillPanelPoints(self, container, skill)
+    CommonUI.AddSkillPanelPointsLabel(self, container, skill)
 end
 
 ---@param skill string
@@ -116,12 +117,12 @@ end
 ---@param yOffset number
 ---@param frameHeight number
 ---@return ISPanel skillPanel
-function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, isInitialized, yOffset, frameHeight)
+function DiceMenu:createSingleSkillPanel(skill, plUsername, isAlternativeColor, isEditing, yOffset, frameHeight)
     local skillPanel = CommonUI.CreateBaseSingleSkillPanel(self, skill, isAlternativeColor, yOffset, frameHeight)
 
     local xOffset = 10
     self:addSkillPanelLabel(skillPanel, skill, xOffset, frameHeight)
-    self:addSkillPanelButtons(skillPanel, skill, isInitialized, frameHeight, plUsername)
+    self:addSkillPanelButtons(skillPanel, skill, isEditing, frameHeight, plUsername)
     self:addSkillPanelPoints(skillPanel, skill)
 
     return skillPanel
@@ -131,7 +132,9 @@ end
 function DiceMenu:fillSkillsContainer()
     local yOffset = 0
     local frameHeight = 40
-    local isInitialized = self.playerHandler:isPlayerInitialized()
+
+    print("Filling skill container")
+    local isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode()
     local plUsername = getPlayer():getUsername()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -139,7 +142,7 @@ function DiceMenu:fillSkillsContainer()
 
         -- TODO Fix warning
 
-        local skillPanel = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, isInitialized, yOffset, frameHeight)
+        local skillPanel = self:createSingleSkillPanel(skill, plUsername, i % 2 ~= 0, isEditing, yOffset, frameHeight)
         yOffset = yOffset + frameHeight
 
         self.skillsPanelContainer:addChild(skillPanel)
@@ -254,9 +257,11 @@ end
 ---@param skillPoints number
 ---@param allocatedPoints number
 function DiceMenu:updateBtnModifierSkill(skill, skillPoints, allocatedPoints)
-    self["btnMinus" .. skill]:setEnable(skillPoints ~= 0)
-    self["btnPlus" .. skill]:setEnable(skillPoints ~= PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS and
-        allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS)
+
+    local enableMinus = skillPoints ~= 0
+    local enablePlus = skillPoints ~= PLAYER_DICE_VALUES.MAX_PER_SKILL_ALLOCATED_POINTS and allocatedPoints ~= PLAYER_DICE_VALUES.MAX_ALLOCATED_POINTS
+
+    CommonUI.UpdateBtnSkillModifier(self, skill, enableMinus, enablePlus)
 end
 
 ---@param isEditing boolean?
@@ -266,7 +271,11 @@ function DiceMenu:update(isEditing)
     local allocatedPoints = self.playerHandler:getAllocatedSkillPoints()
 
     local isAdminMode = self:getIsAdminMode()
-    if isEditing == nil then isEditing = not self.playerHandler:isPlayerInitialized() or self:getIsAdminMode() end
+    if isEditing == nil then
+        --print('isEditing is nil, creating it')
+        isEditing = (not self.playerHandler:isPlayerInitialized()) or self:getIsAdminMode()
+        --print(tostring(isEditing))
+    end
 
     -- Status effects panel
     self:updateStatusEffectsButton(isEditing, isAdminMode)

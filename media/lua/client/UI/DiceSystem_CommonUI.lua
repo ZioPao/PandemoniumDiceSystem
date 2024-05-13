@@ -167,15 +167,16 @@ end
 
 
 ---@param container ISPanel
+---@param ph PlayerHandler
 ---@param skill string
----@param isInitialized boolean
+---@param isEditing boolean
 ---@param frameHeight number
 ---@param plUsername string
-function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitialized, frameHeight, plUsername)
+function DiceCommonUI.AddSkillPanelButtons(parent, container, ph, skill, isEditing, frameHeight, plUsername)
     local btnWidth = DiceCommonUI.BUTTON_WIDTH
 
     -- Check if is initialized
-    if not isInitialized or parent:getIsAdminMode() then
+    if isEditing then
         local btnPlus = ISButton:new(parent.width - btnWidth, 0, btnWidth, frameHeight, "+", parent,
             parent.onOptionMouseDown)
         btnPlus.internal = "PLUS_SKILL"
@@ -195,7 +196,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitializ
         btnMinus:setEnable(true)
         parent["btnMinus" .. skill] = btnMinus
         container:addChild(btnMinus)
-    elseif isInitialized then
+    else
         -- ROLL
         local btnRoll = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth * 2, frameHeight, "Roll", parent,
             parent.onOptionMouseDown)
@@ -203,7 +204,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, skill, isInitializ
         btnRoll:initialise()
         btnRoll:instantiate()
         btnRoll.skill = skill
-        btnRoll:setEnable(plUsername == parent.playerHandler.username)      -- TODO will this work here?
+        btnRoll:setEnable(plUsername == ph.username)      -- TODO will this work here?
         container:addChild(btnRoll)
     end
 end
@@ -211,7 +212,7 @@ end
 ---@param parent ISPanel
 ---@param container ISPanel
 ---@param skill string
-function DiceCommonUI.AddSkillPanelPoints(parent, container, skill)
+function DiceCommonUI.AddSkillPanelPointsLabel(parent, container, skill)
     -- Added - 60 to account for eventual armor bonus
     local skillPointsPanel = ISRichTextPanel:new(parent.width - DiceCommonUI.BUTTON_WIDTH * 2 - 60, 0, 100, 25)
 
@@ -247,5 +248,17 @@ function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeCol
     return skillPanel
 end
 
+
+
+--* UPDATE LOGIC *--
+
+---@param parent ISPanel
+---@param skill string
+---@param enableMinus boolean
+---@param enablePlus boolean
+function DiceCommonUI.UpdateBtnSkillModifier(parent, skill, enableMinus, enablePlus)
+    parent["btnMinus" .. skill]:setEnable(enableMinus)
+    parent["btnPlus" .. skill]:setEnable(enablePlus)
+end
 
 return DiceCommonUI
