@@ -140,7 +140,7 @@ function DiceMenu:fillSkillsContainer()
     local yOffset = 0
     local frameHeight = 40
 
-    print("Filling skill container")
+    --print("Filling skill container")
     local plUsername = getPlayer():getUsername()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -560,7 +560,9 @@ function DiceMenu:onOptionMouseDown(btn)
         DiceSystem_Common.Roll(btn.skill, points)
     elseif btn.internal == 'SAVE' then
         self.playerHandler:setIsInitialized(true)
-        self.playerHandler.SyncPlayerTable(self.username)       -- username could be different than the normal PlayerHandler?
+        self.playerHandler:syncPlayerTable()
+
+
 
 
         DiceMenu.instance.btnConfirm:setEnable(false)
@@ -593,9 +595,9 @@ end
 
 ---Open the Dice Menu panel
 ---@param isAdminMode boolean set admin mode, admins will be able to edit a specific user stats
+---@param username string
 ---@return ISCollapsableWindow
 function DiceMenu.OpenPanel(isAdminMode, username)
-    --local UI_SCALE = getTextManager():getFontHeight(UIFont.Small) / 14
     local playerHandler = PlayerHandler:instantiate(username)
     playerHandler:initModData(false)
 

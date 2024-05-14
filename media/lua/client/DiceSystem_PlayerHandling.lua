@@ -22,6 +22,8 @@ PlayerHandler.handlers = {}
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
+
+    print("Instatiating PlayerHandler for DiceSystem, user: " .. username)
     if PlayerHandler.handlers[username] then
         return PlayerHandler.handlers[username]
     end
@@ -49,10 +51,9 @@ end
 --* Initialization *--
 
 ---This is a fairly aggressive way to sync the moddata table. Use it sparingly
----@param username string
-function PlayerHandler.SyncPlayerTable(username)
+function PlayerHandler:syncPlayerTable()
     sendClientCommand(getPlayer(), DICE_SYSTEM_MOD_STRING, "UpdatePlayerStats",
-        { data = DICE_CLIENT_MOD_DATA[username], username = username })
+        { data = DICE_CLIENT_MOD_DATA[self.username], username = self.username })
 end
 
 ---@return diceDataType
@@ -97,8 +98,9 @@ function PlayerHandler:initModData(force)
         DICE_CLIENT_MOD_DATA[self.username] = {}
         copyTable(DICE_CLIENT_MOD_DATA[self.username], tempTable)
 
-        -- Sync it now
-        PlayerHandler.SyncPlayerTable(self.username)
+        -- Sync it now with the server
+        self:syncPlayerTable()
+    
         print("DiceSystem: initialized player")
     elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")

@@ -16,7 +16,7 @@ TestFramework.registerTestModule("UI Tests", "Do initialization", function()
     local Tests = {}
 
     function Tests.OpenPlayerPanel()
-        Tests.pnl = DiceMenu.OpenPanel(false)
+        Tests.pnl = DiceMenu.OpenPanel(false, getPlayer():getUsername())
         if Tests.pnl == nil then TestUtils.assert(false) end
 
         TestUtils.assert(true)
@@ -90,7 +90,7 @@ TestFramework.registerTestModule("UI Tests", "Rolls", function()
     local DiceMenu = require("UI/DiceSystem_PlayerUI")
 
     function Tests.OpenPlayerPanel()
-        Tests.pnl = DiceMenu.OpenPanel(false)
+        Tests.pnl = DiceMenu.OpenPanel(false, getPlayer():getUsername())
         if Tests.pnl == nil then TestUtils.assert(false) end
 
         TestUtils.assert(true)
