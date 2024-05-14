@@ -418,6 +418,12 @@ function PlayerHandler:getMaxHealth()
     return self:getMaxStat("Health")
 end
 
+---Get total health (max + bonuses, if there are any)
+---@return number
+function PlayerHandler:getTotalHealth()
+    return self:getMaxStat("Health")
+end
+
 --* Movement *--
 
 ---Returns current movmenet
@@ -430,6 +436,13 @@ end
 ---@return number
 function PlayerHandler:getMaxMovement()
     return self:getMaxStat("Movement")
+end
+
+
+---Returns the max movement value + bonuses
+---@return number
+function PlayerHandler:getTotalMovement()
+    return self:getMaxStat("Movement") + self:getMovementBonus()
 end
 
 ---Get the movement bonus

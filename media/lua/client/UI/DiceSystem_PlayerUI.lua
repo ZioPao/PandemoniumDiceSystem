@@ -285,12 +285,12 @@ function DiceMenu:update()
 
 
     local currHealth = self.playerHandler:getCurrentHealth()
-    local maxHealth = self.playerHandler:getMaxHealth()
-    self:updatePanelLine("Health", currHealth, maxHealth)
+    local totalHealth = self.playerHandler:getTotalHealth()
+    self:updatePanelLine("Health", currHealth, totalHealth)
 
-    local totMovement = self.playerHandler:getMaxMovement() + self.playerHandler:getMovementBonus()
     local currMovement = self.playerHandler:getCurrentMovement()
-    self:updatePanelLine("Movement", currMovement, totMovement)
+    local totalMovement = self.playerHandler:getTotalMovement()
+    self:updatePanelLine("Movement", currMovement, totalMovement)
 
     -- Update skills panel
     self:updateSkills(allocatedPoints)
