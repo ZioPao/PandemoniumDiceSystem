@@ -560,6 +560,9 @@ function DiceMenu:onOptionMouseDown(btn)
         DiceSystem_Common.Roll(btn.skill, points)
     elseif btn.internal == 'SAVE' then
         self.playerHandler:setIsInitialized(true)
+        self.playerHandler.SyncPlayerTable(self.username)       -- username could be different than the normal PlayerHandler?
+
+
         DiceMenu.instance.btnConfirm:setEnable(false)
 
         -- If we're editing stuff from the admin, we want to be able to notify the other client to update their stats from the server
@@ -569,7 +572,6 @@ function DiceMenu:onOptionMouseDown(btn)
             sendClientCommand(DICE_SYSTEM_MOD_STRING, 'NotifyAdminChangedClientData',
                 { userID = receivingPl:getOnlineID() })
         end
-
         self:close()
     elseif btn.internal == 'CLOSE' then
         self:close()

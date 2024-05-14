@@ -50,7 +50,7 @@ end
 
 ---This is a fairly aggressive way to sync the moddata table. Use it sparingly
 ---@param username string
-local function SyncPlayerTable(username)
+function PlayerHandler.SyncPlayerTable(username)
     sendClientCommand(getPlayer(), DICE_SYSTEM_MOD_STRING, "UpdatePlayerStats",
         { data = DICE_CLIENT_MOD_DATA[username], username = username })
 end
@@ -108,13 +108,7 @@ end
 ---Set if player has finished their setup via the UI
 ---@param isInitialized boolean
 function PlayerHandler:setIsInitialized(isInitialized)
-    -- Syncs it with server
-    DICE_CLIENT_MOD_DATA[self.username].isInitialized = isInitialized
-
-    -- Maybe the unique case where this is valid
-    if isInitialized then
-        SyncPlayerTable(self.username)
-    end
+    self.diceData.isInitialized = isInitialized
 end
 
 function PlayerHandler:isPlayerInitialized()
@@ -146,14 +140,14 @@ end
 ---@return integer
 function PlayerHandler:getCurrentStat(stat)
     if not self:checkDiceDataValidity() then return -1 end
-    return DICE_CLIENT_MOD_DATA[self.username]["current" .. stat]
+    return self.diceData["current" .. stat]
 end
 
 ---@param stat string
 ---@return integer
 function PlayerHandler:getMaxStat(stat)
     if not self:checkDiceDataValidity() then return -1 end
-    return DICE_CLIENT_MOD_DATA[self.username]["max" .. stat]
+    return self.diceData["max" .. stat]
 end
 
 ---Some stat could have a bonus value, some others don't
@@ -176,7 +170,7 @@ function PlayerHandler:setBonusStat(stat, val)
     if not self:checkDiceDataValidity() then return end
     local bonusStatStr = string.lower(stat) .. "Bonus"
 
-    DICE_CLIENT_MOD_DATA[self.username][bonusStatStr] = val
+    self.diceData[bonusStatStr] = val
 end
 
 ---@param stat string
@@ -209,14 +203,13 @@ end
 function PlayerHandler:handleStat(stat, operation)
     local result = false
 
-
     if operation == "+" then
         result = self:increaseStat(stat)
     elseif operation == "-" then
         result = self:decreaseStat(stat)
     end
 
-    if result and DICE_CLIENT_MOD_DATA[self.username].isInitialized then
+    if result and self.diceData.isInitialized then
         local currStatStr = "current" .. stat
         local currentVal = self.diceData[currStatStr]
 
@@ -355,8 +348,7 @@ end
 function PlayerHandler:getOccupation()
     -- This is used in the prerender for our special combobox. We'll add a bit of added logic to be sure that it doesn't break
     if not self:checkDiceDataValidity() then return "" end
-
-    return DICE_CLIENT_MOD_DATA[self.username].occupation
+    return self.diceData.occupation
 end
 
 ---Set an occupation and its related bonuses
@@ -405,7 +397,7 @@ end
 ---@param status string
 ---@return boolean
 function PlayerHandler:getStatusEffectValue(status)
-    local val = DICE_CLIENT_MOD_DATA[self.username].statusEffects[status]
+    local val = self.diceData.statusEffects[status]
     --print("Status: " .. status .. ",value: " .. tostring(val))
     return val
 end
@@ -450,13 +442,13 @@ function PlayerHandler:setMovementBonus(points, bonusPoints)
 end
 
 function PlayerHandler:setCurrentMovement(movement)
-    DICE_CLIENT_MOD_DATA[self.username].currentMovement = movement
+    self.diceData.currentMovement = movement
 end
 
 ---Set the new correct max movement
 ---@param maxMov number
 function PlayerHandler:setMaxMovement(maxMov)
-    DICE_CLIENT_MOD_DATA[self.username].maxMovement = maxMov
+    self.diceData.maxMovement = maxMov
     local movBonus = self:getMovementBonus()
 
     if self:getCurrentMovement() > maxMov + movBonus then
@@ -500,7 +492,7 @@ end
 ---Check if player is initialized and ready to use the system
 ---@param username string
 ---@return boolean
-PlayerHandler.CheckInitializedStatus = function(username)
+function PlayerHandler.CheckInitializedStatus(username)
     if DICE_CLIENT_MOD_DATA[username] then
         return DICE_CLIENT_MOD_DATA[username].isInitialized
     else
