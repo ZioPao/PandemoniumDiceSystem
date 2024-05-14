@@ -236,10 +236,9 @@ function DiceMenu:updateSkills(allocatedPoints)
                 string.format(" <RGB:0.94,0.82,0.09> <SPACE> + <SPACE> %d", bonusSkillPoints)
         end
 
-        -- Specific case for Resolve, it should scale on armor bonus
-
-        -- TODO Horrible
-        if skill == "Resolve" and armorBonusPoints ~= 0 then
+        -- Account for cases such as Resolve + Armor Bonus
+        local specialPoints = self.playerHandler:getSpecialSkillPoints(skill)
+        if specialPoints ~= 0 then
             skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", armorBonusPoints)
         end
 

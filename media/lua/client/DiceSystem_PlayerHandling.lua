@@ -222,17 +222,35 @@ end
 
 --*  Skills handling *--
 
+
+
+
+
 ---Return skill points + bonus skill points
 ---@param skill string
 ---@return number
 function PlayerHandler:getFullSkillPoints(skill)
     local points = self:getSkillPoints(skill)
     local bonusPoints = self:getBonusSkillPoints(skill)
+    local specialPoints = self:getSpecialSkillPoints(skill)
+
+
     if points ~= -1 and bonusPoints ~= -1 then
-        return points + bonusPoints
+        return points + bonusPoints + specialPoints
     else
         return -1
     end
+end
+
+---Specific case for Resolve, it should scale on armor bonus
+---@param skill string
+function PlayerHandler:getSpecialSkillPoints(skill)
+    local specialPoints = 0
+    if skill == "Resolve" then
+        specialPoints = self:getBonusStat("Armor")
+    end
+
+    return specialPoints
 end
 
 ---Get the amount of points for a specific skill.
