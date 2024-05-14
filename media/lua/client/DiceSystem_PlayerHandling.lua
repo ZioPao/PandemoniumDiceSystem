@@ -98,7 +98,7 @@ function PlayerHandler:initModData(force)
         copyTable(DICE_CLIENT_MOD_DATA[self.username], tempTable)
 
         -- Sync it now
-        SyncPlayerTable(self.username)
+        PlayerHandler.SyncPlayerTable(self.username)
         print("DiceSystem: initialized player")
     elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")
