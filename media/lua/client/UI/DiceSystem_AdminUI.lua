@@ -1,6 +1,7 @@
 require "ISUI/ISPanel"
 require "ISUI/ISScrollingListBox"
 
+-- TODO Auto refresh
 --**************--
 -- Various utilities
 local function FetchPlayers()
@@ -159,9 +160,13 @@ function DiceMenuAdminViewer:createChildren()
     self.mainCategory:initList(players)
 end
 
----@return IsoPlayer
+---@return IsoPlayer?
 function DiceMenuAdminViewer:getSelectedPlayer()
-   return self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+    if self.mainCategory.datas.items and self.mainCategory.datas.selected and self.mainCategory.datas.items[self.mainCategory.datas.selected] and self.mainCategory.datas.items[self.mainCategory.datas.selected].item then
+        return self.mainCategory.datas.items[self.mainCategory.datas.selected].item
+
+    end
+    return nil
 end
 
 function DiceMenuAdminViewer:prerender()
@@ -196,8 +201,7 @@ function DiceMenuAdminViewer:onClick(button)
             local player = self:getSelectedPlayer()
             local playerID = player:getOnlineID()
 
-            -- TODO Fix warning
-            PlayerHandler.CleanModData(playerID)
+            PlayerHandler.CleanModData(playerID, player:getUsername())
             processAdminChatMessage("Reset " .. player:getUsername() .. " data")
 
 

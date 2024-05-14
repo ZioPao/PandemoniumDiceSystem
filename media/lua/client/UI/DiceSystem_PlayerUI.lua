@@ -580,17 +580,13 @@ function DiceMenu:onOptionMouseDown(btn)
     end
 end
 
-function DiceMenu:setVisible(visible)
-    self.javaObject:setVisible(visible)
-end
-
 -------------------------------------
 
 function DiceMenu:close()
+    ISCollapsableWindow.close(self)
     self:removeFromUIManager()
     local tableIndex = self.plUsername .. tostring(self)
     CommonUI.RemoveCachedStatusEffectsText(tableIndex)
-    ISCollapsableWindow.close(self)
 end
 
 ---Open the Dice Menu panel

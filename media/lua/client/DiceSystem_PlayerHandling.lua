@@ -226,44 +226,29 @@ end
 ---@param skill string
 ---@return number
 function PlayerHandler:getFullSkillPoints(skill)
-    local points = self.diceData.skills[skill]
-    local bonusPoints = self.diceData.skillsBonus[skill]
-
-    return points + bonusPoints
+    local points = self:getSkillPoints(skill)
+    local bonusPoints = self:getBonusSkillPoints(skill)
+    if points ~= -1 and bonusPoints ~= -1 then
+        return points + bonusPoints
+    else
+        return -1
+    end
 end
 
 ---Get the amount of points for a specific skill.
 ---@param skill string
 ---@return number
 function PlayerHandler:getSkillPoints(skill)
-    if self.diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
-        return -1
-    end
-
-    local points = self.diceData.skills[skill]
-    if points ~= nil then
-        return points
-    else
-        return -1
-    end
+    if not self:checkDiceDataValidity() then return -1 end
+    return self.diceData.skills[skill]
 end
 
 ---Get the amount of bonus points for a specific skill.
 ---@param skill string
 ---@return number
 function PlayerHandler:getBonusSkillPoints(skill)
-    if self.diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
-        return -1
-    end
-
-    local points = self.diceData.skillsBonus[skill]
-    if points ~= nil then
-        return points
-    else
-        return -1
-    end
+    if not self:checkDiceDataValidity() then return -1 end
+    return self.diceData.skillsBonus[skill]
 end
 
 ---Increment a specific skillpoint
@@ -596,6 +581,10 @@ end
 ---@param key string
 ---@param data table
 local function ReceiveGlobalModData(key, data)
+
+    -- TODO Extremely heavy and inefficient
+
+
     --print("Received global mod data")
     if key == DICE_SYSTEM_MOD_STRING then
         --Creating a deep copy of recieved data and storing it in local store CLIENT_GLOBALMODDATA table
