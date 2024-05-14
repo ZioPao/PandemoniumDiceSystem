@@ -238,8 +238,8 @@ function DiceMenu:updateSkills(allocatedPoints)
 
         -- Account for cases such as Resolve + Armor Bonus
         local specialPoints = self.playerHandler:getSpecialSkillPoints(skill)
-        if specialPoints ~= 0 then
-            skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", armorBonusPoints)
+        if specialPoints and specialPoints ~= 0 then
+            skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", specialPoints)
         end
 
 
