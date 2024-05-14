@@ -213,8 +213,9 @@ end
 ---@param container ISPanel
 ---@param skill string
 function DiceCommonUI.AddSkillPanelPointsLabel(parent, container, skill)
-    -- Added - 60 to account for eventual armor bonus
-    local skillPointsPanel = ISRichTextPanel:new(parent.width - DiceCommonUI.BUTTON_WIDTH * 2 - 60, 0, 100, 25)
+    -- Added - 80 to account for eventual stats bonuses, such as armor bonus
+    local specialPointsWidth = 80
+    local skillPointsPanel = ISRichTextPanel:new(parent.width - DiceCommonUI.BUTTON_WIDTH * 2 - specialPointsWidth, 0, 100, 25)
 
     skillPointsPanel:initialise()
     container:addChild(skillPointsPanel)

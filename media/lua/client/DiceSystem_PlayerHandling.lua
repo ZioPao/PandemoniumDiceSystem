@@ -22,7 +22,6 @@ PlayerHandler.handlers = {}
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
-
     print("Instatiating PlayerHandler for DiceSystem, user: " .. username)
     if PlayerHandler.handlers[username] then
         return PlayerHandler.handlers[username]
@@ -100,7 +99,7 @@ function PlayerHandler:initModData(force)
 
         -- Sync it now with the server
         self:syncPlayerTable()
-    
+
         print("DiceSystem: initialized player")
     elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")
@@ -220,11 +219,54 @@ function PlayerHandler:handleStat(stat, operation)
     end
 end
 
+--* Special cases for stats, armor *--
+
+---Should run ONLY on the actual client, not from admins or other players
+---@return boolean
+function PlayerHandler:handleArmorBonus()
+    local pl = getPlayer()
+    if self.username ~= pl:getUsername() then return false end
+    if not self:checkDiceDataValidity() then return false end
+
+
+    local wornItems = pl:getWornItems()
+    local tempProtection = 0
+    for i = 1, wornItems:size() do
+        ---@type InventoryItem
+        local item = wornItems:get(i - 1):getItem()
+        if instanceof(item, "Clothing") then
+            ---@cast item Clothing
+            tempProtection = tempProtection + item:getBulletDefense()
+        end
+    end
+
+    -- Calculate the armor bonus
+    local armorBonus = math.floor(tempProtection / 100)
+    if armorBonus < 0 then armorBonus = 0 end
+
+    -- Hard cap it at 3
+    if armorBonus > 3 then armorBonus = 3 end
+
+
+    -- TODO Cache old armor bonus before updating it
+
+    -- Set the correct amount of armor bonus
+    self.diceData.armorBonus = armorBonus
+
+    -- We need to scale the movement accordingly
+    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - armorBonus
+    self:setMaxMovement(maxMov)
+
+    if self:isPlayerInitialized() then
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus',
+            { armorBonus = armorBonus, username = self.username })
+        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', { maxMovement = maxMov, username = self.username })
+    end
+
+    return true
+end
+
 --*  Skills handling *--
-
-
-
-
 
 ---Return skill points + bonus skill points
 ---@param skill string
@@ -438,7 +480,6 @@ function PlayerHandler:getMaxMovement()
     return self:getMaxStat("Movement")
 end
 
-
 ---Returns the max movement value + bonuses
 ---@return number
 function PlayerHandler:getTotalMovement()
@@ -518,63 +559,36 @@ function PlayerHandler.CheckInitializedStatus(username)
     end
 end
 
-
----Calculate the current armor bonus. Must be run ONLY on that specific client!
----@param pl IsoPlayer local player
----@return boolean
-function PlayerHandler.CalculateArmorBonus(pl)
-    --!!! This could be run on any client.
-    if pl == nil then return false end
-    if pl ~= getPlayer() then return false end
-    local username = getPlayer():getUsername()
-    local handler = PlayerHandler:instantiate(username)
-
-
-    if DICE_CLIENT_MOD_DATA == nil or DICE_CLIENT_MOD_DATA[username] == nil then return false end
-    local wornItems = pl:getWornItems()
-    local tempProtection = 0
-    for i = 1, wornItems:size() do
-        ---@type InventoryItem
-        local item = wornItems:get(i - 1):getItem()
-        if instanceof(item, "Clothing") then
-            ---@cast item Clothing
-            tempProtection = tempProtection + item:getBulletDefense()
-        end
-    end
-
-    -- Calculate the armor bonus
-    local armorBonus = math.floor(tempProtection / 100)
-    if armorBonus < 0 then armorBonus = 0 end
-
-    -- Hard cap it at 3
-    if armorBonus > 3 then armorBonus = 3 end
-
-
-    -- TODO Cache old armor bonus before updating it
-
-    -- Set the correct amount of armor bonus
-    DICE_CLIENT_MOD_DATA[username].armorBonus = armorBonus
-
-    -- We need to scale the movement accordingly
-    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - armorBonus
-    handler:setMaxMovement(maxMov)
-
-    -- TODO Cache old max movement before updating it
-    if handler:isPlayerInitialized() then
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus', { armorBonus = armorBonus, username = username })
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', { maxMovement = maxMov, username = username })
-    end
-
-    return true
-end
-
 ------------------------
 --* Various events handling
 Events.OnGameStart.Add(function()
+    --print("Initializing with OnGameStart")
     local handler = PlayerHandler:instantiate(getPlayer():getUsername())
     handler:initModData(false)
+    local os_time = os.time
+    local sTime = os_time()
+
+    local function HandleArmorBonusAtStartup()
+        local cTime = os_time()
+
+        if cTime > sTime + 5 then
+            handler:handleArmorBonus() -- Armor bonus must be calculated here
+            Events.OnTick.Remove(HandleArmorBonusAtStartup)
+        end
+
+
+    end
+
+    Events.OnTick.Add(HandleArmorBonusAtStartup)
+
 end)
-Events.OnClothingUpdated.Add(PlayerHandler.CalculateArmorBonus)
+
+-- Static version of handleArmorBonus
+Events.OnClothingUpdated.Add(function(pl)
+    if pl ~= getPlayer() then return end
+    local handler = PlayerHandler:instantiate(pl:getUsername())
+    handler:handleArmorBonus() -- Armor bonus must be calculated here
+end)
 
 
 
@@ -612,7 +626,6 @@ end
 ---@param key string
 ---@param data table
 local function ReceiveGlobalModData(key, data)
-
     -- TODO Extremely heavy and inefficient
 
 

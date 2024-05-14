@@ -119,7 +119,7 @@ end
 ---@param skill string
 ---@param plUsername string
 ---@param isAlternativeColor boolean
----@param isInitialized boolean
+---@param isEditing boolean
 ---@param yOffset number
 ---@param frameHeight number
 ---@return ISPanel skillPanel
@@ -224,8 +224,6 @@ end
 
 ---@param allocatedPoints number
 function DiceMenu:updateSkills(allocatedPoints)
-    local armorBonusPoints = self.playerHandler:getArmorBonus()
-
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
         local skill = PLAYER_DICE_VALUES.SKILLS[i]
         local skillPoints = self.playerHandler:getSkillPoints(skill)
