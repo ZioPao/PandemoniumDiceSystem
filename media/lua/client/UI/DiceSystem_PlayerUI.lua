@@ -140,7 +140,7 @@ function DiceMenu:fillSkillsContainer()
     local yOffset = 0
     local frameHeight = CommonUI.FRAME_HEIGHT
 
-    --print("Filling skill container")
+    --DiceSystem_Common.DebugWriteLog"Filling skill container")
     local plUsername = getPlayer():getUsername()
 
     for i = 1, #PLAYER_DICE_VALUES.SKILLS do
@@ -442,7 +442,7 @@ function DiceMenu:createChildren()
     end
     local occupation = self.playerHandler:getOccupation()
     if occupation ~= "" then
-        --print(occupation)
+        --DiceSystem_Common.DebugWriteLogoccupation)
         self.comboOccupation:select(occupation)
     end
 
@@ -565,7 +565,7 @@ function DiceMenu:onOptionMouseDown(btn)
 
         -- If we're editing stuff from the admin, we want to be able to notify the other client to update their stats from the server
         if self:getIsAdminMode() then
-            print("ADMIN MODE! Sending notification to other client")
+            DiceSystem_Common.DebugWriteLog("ADMIN MODE! Sending notification to other client")
             local receivingPl = getPlayerFromUsername(self.playerHandler.username)
             sendClientCommand(DICE_SYSTEM_MOD_STRING, 'NotifyAdminChangedClientData',
                 { userID = receivingPl:getOnlineID() })
@@ -602,7 +602,7 @@ function DiceMenu.OpenPanel(isAdminMode, username)
     end
 
 
-    --print(FONT_SCALE)
+    --DiceSystem_Common.DebugWriteLogFONT_SCALE)
     local width = 460 * FONT_SCALE
     local height = 700 * FONT_SCALE
     local pnl = DiceMenu:new(100, 200, width, height, playerHandler)

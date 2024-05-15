@@ -74,8 +74,8 @@ function StatusEffectsUI:render()
             local userID = getOnlineID(pl)
             if shouldUpdate then
                 local username = getUsername(pl)
-                --print("Updating for " ..username)
-                --print("Requesting update for " .. pl:getUsername())
+                --DiceSystem_Common.DebugWriteLog"Updating for " ..username)
+                --DiceSystem_Common.DebugWriteLog"Requesting update for " .. pl:getUsername())
                 sendClientCommand(DICE_SYSTEM_MOD_STRING, 'RequestUpdatedStatusEffects',
                     { username = username, userID = userID })
             end
@@ -123,7 +123,7 @@ function StatusEffectsUI:drawStatusEffect(pl, statusEffects)
 
         -- OPTIMIZE This part could be cached if we wanted.
         local stringToPrint = string.format("[%s]", v)
-        --print(stringToPrint)
+        --DiceSystem_Common.DebugWriteLogstringToPrint)
 
         if lineCounter >= 3 then
             y = y + getTextManager():MeasureStringY(UIFont.NewMedium, stringToPrint)

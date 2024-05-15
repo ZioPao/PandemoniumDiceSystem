@@ -26,16 +26,16 @@ function StatusEffectsHandler.UpdateLocalStatusEffectsTable(userID, statusEffect
         for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
             local x = PLAYER_DICE_VALUES.STATUS_EFFECTS[i]
             if statusEffects[x] ~= nil and statusEffects[x] == true then
-                --print(x)
+                --DiceSystem_Common.DebugWriteLogx)
                 table.insert(newStatusEffectsTable, x)
             end
         end
 
         if table.concat(newStatusEffectsTable) ~= table.concat(StatusEffectsHandler.nearPlayersStatusEffects[userID]) then
-            --print("Changing table! Some stuff is different")
+            --DiceSystem_Common.DebugWriteLog"Changing table! Some stuff is different")
             StatusEffectsHandler.nearPlayersStatusEffects[userID] = newStatusEffectsTable
             --else
-            --print("Same effects! No change needed")
+            --DiceSystem_Common.DebugWriteLog"Same effects! No change needed")
         end
     else
         StatusEffectsHandler.nearPlayersStatusEffects[userID] = {}

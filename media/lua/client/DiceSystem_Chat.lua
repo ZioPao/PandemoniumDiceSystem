@@ -75,7 +75,7 @@ function DiceSystem_ChatOverride.getTextWithPrefix(originalFunc)
     return function(self, ...)
         local originalMsg = originalFunc(self, ...)
         self:setOverHeadSpeech(true)
-        --print(originalMsg)
+        --DiceSystem_Common.DebugWriteLogoriginalMsg)
 
         if string.find(originalMsg, '(||DICE_SYSTEM_MESSAGE||)') == nil then return originalMsg end
 
@@ -84,7 +84,7 @@ function DiceSystem_ChatOverride.getTextWithPrefix(originalFunc)
         local username = GetUsername(correctedMsg)
 
         local rollMsg = GetAssembledMessage(correctedMsg, timestamp, username)
-        --print(rollMsg)
+        --DiceSystem_Common.DebugWriteLogrollMsg)
         self:setOverHeadSpeech(false)
         return rollMsg
     end

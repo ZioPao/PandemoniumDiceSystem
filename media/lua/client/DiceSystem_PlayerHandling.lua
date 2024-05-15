@@ -23,7 +23,7 @@ PlayerHandler.handlers = {}
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
-    print("Instatiating PlayerHandler for DiceSystem, user: " .. username)
+    DiceSystem_Common.DebugWriteLog("Instatiating PlayerHandler for DiceSystem, user: " .. username)
     if PlayerHandler.handlers[username] then
         return PlayerHandler.handlers[username]
     end
@@ -43,7 +43,7 @@ function PlayerHandler:checkDiceDataValidity()
         self.diceData = DICE_CLIENT_MOD_DATA[self.username]
         return true
     else
-        print("DICE_CLIENT_MOD_DATA is unavailable for " .. tostring(self.username))
+        DiceSystem_Common.DebugWriteLog("DICE_CLIENT_MOD_DATA is unavailable for " .. tostring(self.username))
         return false
     end
 end
@@ -61,7 +61,7 @@ end
 function PlayerHandler:setupModDataTable()
     ---@type diceDataType
     local tempTable = CommonMethods.DeepCopy(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE)
-    --print("[DiceSystem] Initializing new player dice data")
+    --DiceSystem_Common.DebugWriteLog"[DiceSystem] Initializing new player dice data")
 
     -- Setup status effects
     for i = 1, #PLAYER_DICE_VALUES.STATUS_EFFECTS do
@@ -82,7 +82,7 @@ end
 --- Creates a new ModData for a player
 ---@param force boolean Force initializiation for the current player
 function PlayerHandler:initModData(force)
-    --print("[DiceSystem] Initializing!")
+    --DiceSystem_Common.DebugWriteLog"[DiceSystem] Initializing!")
     if self.username == nil then
         self.username = getPlayer():getUsername()
     end
@@ -99,7 +99,7 @@ function PlayerHandler:initModData(force)
         -- Sync it now with the server
         self:syncPlayerTable()
 
-        print("DiceSystem: initialized player")
+        DiceSystem_Common.DebugWriteLog("DiceSystem: initialized player")
     elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")
     end
@@ -379,7 +379,7 @@ end
 ---@return integer
 function PlayerHandler:getAllocatedSkillPoints()
     if self.diceData == nil then
-        --print("DiceSystem: modData is nil, can't return skill point value")
+        --DiceSystem_Common.DebugWriteLog"DiceSystem: modData is nil, can't return skill point value")
         return -1
     end
 
@@ -400,11 +400,11 @@ end
 ---Set an occupation and its related bonuses
 ---@param occupation string
 function PlayerHandler:setOccupation(occupation)
-    --print("Setting occupation")
-    --print(PlayerStatsHandler.username)
+    --DiceSystem_Common.DebugWriteLog"Setting occupation")
+    --DiceSystem_Common.DebugWriteLogPlayerStatsHandler.username)
     if self.diceData == nil then return end
 
-    --print("Setting occupation => " .. occupation)
+    --DiceSystem_Common.DebugWriteLog"Setting occupation => " .. occupation)
     self.diceData.occupation = occupation
     local bonusData = PLAYER_DICE_VALUES.OCCUPATIONS_BONUS[occupation]
 
@@ -444,7 +444,7 @@ end
 ---@return boolean
 function PlayerHandler:getStatusEffectValue(status)
     local val = self.diceData.statusEffects[status]
-    --print("Status: " .. status .. ",value: " .. tostring(val))
+    --DiceSystem_Common.DebugWriteLog"Status: " .. status .. ",value: " .. tostring(val))
     return val
 end
 
@@ -561,7 +561,16 @@ end
 ------------------------
 --* Various events handling
 Events.OnGameStart.Add(function()
-    --print("Initializing with OnGameStart")
+    --DiceSystem_Common.DebugWriteLog"Initializing with OnGameStart")
+
+    DiceSystem_Common.DebugWriteLog("Version " .. tostring(DICE_SYSTEM_MOD_VERSION))
+
+    for i=1, #DICE_SYSTEM_MOD_ADDONS do
+        local addonTab = DICE_SYSTEM_MOD_ADDONS[i]
+        DiceSystem_Common.DebugWriteLog("ADDON: " .. tostring(addonTab.name) .. " v" .. tostring(addonTab.version))
+    end
+
+
     local handler = PlayerHandler:instantiate(getPlayer():getUsername())
     handler:initModData(false)
     local os_time = os.time
@@ -599,7 +608,6 @@ end)
 
 ---Ask ModData from server
 local function OnConnected()
-    print("Pandemonium RP Dice System v" .. tostring(DICE_SYSTEM_MOD_VERSION))
     ModData.request(DICE_SYSTEM_MOD_STRING)
     DICE_CLIENT_MOD_DATA = ModData.get(DICE_SYSTEM_MOD_STRING)
 

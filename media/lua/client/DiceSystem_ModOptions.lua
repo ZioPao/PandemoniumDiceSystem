@@ -11,10 +11,10 @@ local OPTIONS = {
 local function CheckOptions()
     --* Color blindness check
     if OPTIONS.enableColorBlind then
-        --print("Color Blind colors")
+        --DiceSystem_Common.DebugWriteLog"Color Blind colors")
         DiceSystem_Common.SetStatusEffectsColorsTable(COLORS_DICE_TABLES.STATUS_EFFECTS_ALT)
     else
-        --print("Normal colors")
+        --DiceSystem_Common.DebugWriteLog"Normal colors")
         DiceSystem_Common.SetStatusEffectsColorsTable(COLORS_DICE_TABLES.STATUS_EFFECTS)
     end
 
@@ -32,7 +32,7 @@ if ModOptions and ModOptions.getInstance then
     enableColorBlind.tooltip = "Enable colorblind alternative colors"
 
     function enableColorBlind:OnApplyInGame(val)
-        --print("Reapplying")
+        --DiceSystem_Common.DebugWriteLog"Reapplying")
         if not val then
             DiceSystem_Common.SetStatusEffectsColorsTable(COLORS_DICE_TABLES.STATUS_EFFECTS)
         else
@@ -55,7 +55,7 @@ if ModOptions and ModOptions.getInstance then
 
     Events.OnGameStart.Add(CheckOptions)
 else
-    --print("Setting normal colors")
+    --DiceSystem_Common.DebugWriteLog"Setting normal colors")
     DiceSystem_Common.SetStatusEffectsColorsTable(COLORS_DICE_TABLES.STATUS_EFFECTS)
     StatusEffectsUI.SetUserOffset(0)
 end

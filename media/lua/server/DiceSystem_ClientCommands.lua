@@ -8,7 +8,7 @@ local ModDataCommands = {}
 ---@param playerObj IsoPlayer
 ---@param args {data : table, username : string}
 function ModDataCommands.UpdatePlayerStats(playerObj, args)
-	print("DiceSystem: Syncing player data for " .. args.username)
+	DiceSystem_Common.DebugWriteLog("DiceSystem: Syncing player data for " .. args.username)
 	if PlayersDiceData == nil then return end
 	if args == nil then
 		args = {
@@ -39,8 +39,8 @@ end
 ---Similiar to ResetServerDiceData, but we'll skip the destroying part. We just notify the client that their data has been changed elsewhere
 ---@param args table userID=number
 function ModDataCommands.NotifyAdminChangedClientData(_, args)
-	--print("NotifyAdminChangedClientData")
-	--print(args.userID)
+	--DiceSystem_Common.DebugWriteLog"NotifyAdminChangedClientData")
+	--DiceSystem_Common.DebugWriteLogargs.userID)
 	local receivingPl = getPlayerByOnlineID(args.userID)
 	sendServerCommand(receivingPl, DICE_SYSTEM_MOD_STRING, "ResetClientDiceData", { forceSync = true })
 end
@@ -122,32 +122,32 @@ function ModDataCommands.UpdateArmorBonus(_, args)
 end
 
 function ModDataCommands.UpdateStatusEffect(_, args)
-	--print("Update status effect")
+	--DiceSystem_Common.DebugWriteLog"Update status effect")
 
 	local isActive = args.isActive
 	local statusEffect = args.statusEffect
 	local userID = args.userID
-	-- print(statusEffect)
-	-- print(isActive)
+	-- DiceSystem_Common.DebugWriteLogstatusEffect)
+	-- DiceSystem_Common.DebugWriteLogisActive)
 	PlayersDiceData[args.username].statusEffects[statusEffect] = isActive
 
 	if userID then
 		sendServerCommand(DICE_SYSTEM_MOD_STRING, 'ReceiveUpdatedStatusEffects',
 			{ statusEffectsTable = PlayersDiceData[args.username].statusEffects, userID = userID })
 	--else
-		--print("Couldn't find " .. args.username)
+		--DiceSystem_Common.DebugWriteLog"Couldn't find " .. args.username)
 	end
 
 
 
-	--print(PlayersDiceData[args.username].statusEffects[statusEffect])
+	--DiceSystem_Common.DebugWriteLogPlayersDiceData[args.username].statusEffects[statusEffect])
 end
 
 --****************************************************-
 
 local function OnClientCommand(module, command, playerObj, args)
 	if module ~= DICE_SYSTEM_MOD_STRING then return end
-	--print("Received ModData command " .. command)
+	--DiceSystem_Common.DebugWriteLog"Received ModData command " .. command)
 	if ModDataCommands[command] and PlayersDiceData ~= nil then
 		ModDataCommands[command](playerObj, args)
 		ModData.add(DICE_SYSTEM_MOD_STRING, PlayersDiceData)
@@ -161,7 +161,7 @@ Events.OnClientCommand.Add(OnClientCommand)
 -- Handle Global Mod Data
 
 local function OnInitGlobalModData()
-	--print("Initializing global mod data")
+	--DiceSystem_Common.DebugWriteLog"Initializing global mod data")
 	PlayersDiceData = ModData.getOrCreate(DICE_SYSTEM_MOD_STRING)
 end
 Events.OnInitGlobalModData.Add(OnInitGlobalModData)

@@ -90,12 +90,12 @@ function DiceSystem_ComboBoxStatusPopup:doDrawItem(y, item, alt)
     end
     local itemPadY = self.itemPadY or (item.height - self.fontHgt) / 2
     local color = { r = 1, b = 1, g = 1, a = 1 }
-    --print(item.text)
+    --DiceSystem_Common.DebugWriteLogitem.text)
 
     local statusEffectTrimmed = item.text:gsub("%s+", "")
 
     if self.playerHandler:getStatusEffectValue(statusEffectTrimmed) then
-        --print("Active!")
+        --DiceSystem_Common.DebugWriteLog"Active!")
         color.r = 0
         color.g = 1
         color.b = 0

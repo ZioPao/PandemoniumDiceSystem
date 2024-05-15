@@ -77,7 +77,7 @@ function DiceCommonUI.UpdateStatusEffectsText(parent, username)
 
     local indexTab = username .. tostring(parent)
     if DiceCommonUI.cachedStatusEffects and DiceCommonUI.cachedStatusEffects[indexTab] and DiceCommonUI.cachedStatusEffects[indexTab].size and DiceCommonUI.cachedStatusEffects[indexTab].size == amountActiveStatusEffects then
-        --print("Updating from cache")
+        --DiceSystem_Common.DebugWriteLog"Updating from cache")
         parent.labelStatusEffectsList:setText(DiceCommonUI.cachedStatusEffects[indexTab].text)
         parent.labelStatusEffectsList.textDirty = true
         return
@@ -133,7 +133,7 @@ end
 ---Removes a cached status effects table used for UIs
 ---@param index string
 function DiceCommonUI.RemoveCachedStatusEffectsText(index)
-    --print("Removing cached text")
+    --DiceSystem_Common.DebugWriteLog"Removing cached text")
     DiceCommonUI.cachedStatusEffects[index] = nil
 end
 

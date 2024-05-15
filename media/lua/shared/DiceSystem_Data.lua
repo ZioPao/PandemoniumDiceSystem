@@ -1,6 +1,9 @@
 DICE_SYSTEM_MOD_STRING = "PandemoniumDiceSystem"
 DICE_SYSTEM_MOD_VERSION = "1.4"
 
+---@type table<integer, { name : string, version : string}>
+DICE_SYSTEM_MOD_ADDONS = {}
+
 PLAYER_DICE_VALUES = {
     STATUS_EFFECTS = { "Stable", "Wounded", "Bleeding", "Moderate", "Severe", "Prone", "Unconscious", "Frightened" },
     OCCUPATIONS = { "Unemployed", "Artist", "WageSlave", "Soldier", "Frontiersmen", "LawEnforcement", "FirstResponders",
@@ -132,16 +135,24 @@ function DiceSystem_Common.GetForenameWithoutTabs(plDescriptor)
     return forename
 end
 
-if isDebugEnabled() then
-    ---Writes a log in the console ONLY if debug is enabled
-    ---@param text string
-    function DiceSystem_Common.DebugWriteLog(text)
-        --writeLog("DiceSystem", text)
-        print("[DiceSystem] " .. text)
-    end
-else
-    ---Placeholder, to prevent non essential calls
-    function DiceSystem_Common.DebugWriteLog()
-        return
-    end
+
+---Writes a log in the console with [DiceSystem] as a prefix
+---@param text string
+function DiceSystem_Common.DebugWriteLog(text)
+    --writeLog("DiceSystem", text)
+    print("[DiceSystem] " .. tostring(text))
 end
+
+-- if isDebugEnabled() then
+--     ---Writes a log in the console ONLY if debug is enabled
+--     ---@param text string
+--     function DiceSystem_Common.DebugWriteLog(text)
+--         --writeLog("DiceSystem", text)
+--         DiceSystem_Common.DebugWriteLog"[DiceSystem] " .. tostring(text))
+--     end
+-- else
+--     ---Placeholder, to prevent non essential calls
+--     function DiceSystem_Common.DebugWriteLog()
+--         return
+--     end
+-- end
