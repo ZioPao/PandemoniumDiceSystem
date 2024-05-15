@@ -1,4 +1,5 @@
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
+local CommonMethods = require("DiceSystem_CommonMethods")
 ----------------------
 
 ---@alias statusEffectsType {}
@@ -55,13 +56,11 @@ function PlayerHandler:syncPlayerTable()
         { data = DICE_CLIENT_MOD_DATA[self.username], username = self.username })
 end
 
+---Exec a deep copy of DEFAULT_MOD_TABLE to the user mod data
 ---@return diceDataType
 function PlayerHandler:setupModDataTable()
     ---@type diceDataType
-    local tempTable = {}
-    for k, v in pairs(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE) do
-        tempTable[k] = v
-    end
+    local tempTable = CommonMethods.DeepCopy(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE)
     --print("[DiceSystem] Initializing new player dice data")
 
     -- Setup status effects
@@ -586,6 +585,9 @@ end)
 -- Static version of handleArmorBonus
 Events.OnClothingUpdated.Add(function(pl)
     if pl ~= getPlayer() then return end
+
+    ---@cast pl IsoPlayer
+
     local handler = PlayerHandler:instantiate(pl:getUsername())
     handler:handleArmorBonus() -- Armor bonus must be calculated here
 end)
@@ -608,32 +610,16 @@ end
 
 Events.OnConnected.Add(OnConnected)
 
-local function copyTable(tableA, tableB)
-    if not tableA or not tableB then
-        return
-    end
-    for key, value in pairs(tableB) do
-        tableA[key] = value
-    end
-    for key, _ in pairs(tableA) do
-        if not tableB[key] then
-            tableA[key] = nil
-        end
-    end
-end
 
 ---Receives ModData from server
 ---@param key string
 ---@param data table
 local function ReceiveGlobalModData(key, data)
     -- TODO Extremely heavy and inefficient
+    -- Why the fuck are we even doing a copy table here?
+    if key ~= DICE_SYSTEM_MOD_STRING then return end
 
-
-    --print("Received global mod data")
-    if key == DICE_SYSTEM_MOD_STRING then
-        --Creating a deep copy of recieved data and storing it in local store CLIENT_GLOBALMODDATA table
-        copyTable(DICE_CLIENT_MOD_DATA, data)
-    end
+    DICE_CLIENT_MOD_DATA = data     -- assign received data to a local reference
 
     --Update global mod data with local table (from global_mod_data.bin)
     ModData.add(DICE_SYSTEM_MOD_STRING, DICE_CLIENT_MOD_DATA)
