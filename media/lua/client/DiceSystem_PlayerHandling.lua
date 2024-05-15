@@ -599,7 +599,7 @@ end)
 
 ---Ask ModData from server
 local function OnConnected()
-    print("Requested global mod data")
+    print("Pandemonium RP Dice System v" .. tostring(DICE_SYSTEM_MOD_VERSION))
     ModData.request(DICE_SYSTEM_MOD_STRING)
     DICE_CLIENT_MOD_DATA = ModData.get(DICE_SYSTEM_MOD_STRING)
 
@@ -611,11 +611,11 @@ end
 Events.OnConnected.Add(OnConnected)
 
 
----Receives ModData from server
+---Receive ModData from server
 ---@param key string
 ---@param data table
 local function ReceiveGlobalModData(key, data)
-    -- TODO Extremely heavy and inefficient
+    -- TODO Test if everything is correct, we used a copyTable here but I'm not sure if it was necessary
     -- Why the fuck are we even doing a copy table here?
     if key ~= DICE_SYSTEM_MOD_STRING then return end
 

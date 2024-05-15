@@ -1,4 +1,5 @@
 DICE_SYSTEM_MOD_STRING = "PandemoniumDiceSystem"
+DICE_SYSTEM_MOD_VERSION = "1.4"
 
 PLAYER_DICE_VALUES = {
     STATUS_EFFECTS = { "Stable", "Wounded", "Bleeding", "Moderate", "Severe", "Prone", "Unconscious", "Frightened" },
