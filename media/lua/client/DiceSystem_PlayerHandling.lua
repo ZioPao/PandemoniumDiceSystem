@@ -23,7 +23,7 @@ PlayerHandler.handlers = {}
 ---@param username string
 ---@return PlayerHandler
 function PlayerHandler:instantiate(username)
-    DiceSystem_Common.DebugWriteLog("Instatiating PlayerHandler for DiceSystem, user: " .. username)
+    DiceSystem_Common.DebugWriteLog("Instantiating PlayerHandler for user: " .. username)
     if PlayerHandler.handlers[username] then
         return PlayerHandler.handlers[username]
     end
@@ -99,7 +99,7 @@ function PlayerHandler:initModData(force)
         -- Sync it now with the server
         self:syncPlayerTable()
 
-        DiceSystem_Common.DebugWriteLog("DiceSystem: initialized player")
+        DiceSystem_Common.DebugWriteLog("Initialized player")
     elseif DICE_CLIENT_MOD_DATA[self.username] == nil then
         error("DiceSystem: Global mod data is broken")
     end
@@ -563,7 +563,7 @@ end
 Events.OnGameStart.Add(function()
     --DiceSystem_Common.DebugWriteLog"Initializing with OnGameStart")
 
-    DiceSystem_Common.DebugWriteLog("Version " .. tostring(DICE_SYSTEM_MOD_VERSION))
+    DiceSystem_Common.DebugWriteLog("PDRPDS v" .. tostring(DICE_SYSTEM_MOD_VERSION))
 
     for i=1, #DICE_SYSTEM_MOD_ADDONS do
         local addonTab = DICE_SYSTEM_MOD_ADDONS[i]
