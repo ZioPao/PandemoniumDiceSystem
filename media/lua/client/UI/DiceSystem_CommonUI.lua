@@ -33,6 +33,7 @@ DiceCommonUI.cachedStatusEffects = {}
 DiceCommonUI.BUTTON_WIDTH = 100
 
 DiceCommonUI.FRAME_HEIGHT = 40 * DiceCommonUI.FONT_SCALE
+DiceCommonUI.X_MARGIN = 2
 
 ---Create a text panel
 ---@param parent ISPanel
@@ -179,7 +180,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, ph, skill, isEditi
 
     -- Check if is initialized
     if isEditing then
-        local btnPlus = ISButton:new(parent.width - btnWidth, 0, btnWidth, frameHeight, "+", parent,
+        local btnPlus = ISButton:new(parent.width - btnWidth - DiceCommonUI.X_MARGIN*2, 0, btnWidth, frameHeight, "+", parent,
             parent.onOptionMouseDown)
         btnPlus.internal = "PLUS_SKILL"
         btnPlus.skill = skill
@@ -189,7 +190,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, ph, skill, isEditi
         parent["btnPlus" .. skill] = btnPlus
         container:addChild(btnPlus)
 
-        local btnMinus = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth, frameHeight, "-", parent,
+        local btnMinus = ISButton:new(parent.width - btnWidth * 2 - DiceCommonUI.X_MARGIN*2, 0, btnWidth, frameHeight, "-", parent,
             parent.onOptionMouseDown)
         btnMinus.internal = "MINUS_SKILL"
         btnMinus.skill = skill
@@ -200,7 +201,7 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, ph, skill, isEditi
         container:addChild(btnMinus)
     else
         -- ROLL
-        local btnRoll = ISButton:new(parent.width - btnWidth * 2, 0, btnWidth * 2, frameHeight, "Roll", parent,
+        local btnRoll = ISButton:new(parent.width - btnWidth * 2 - DiceCommonUI.X_MARGIN*2, 0, btnWidth * 2, frameHeight, "Roll", parent,
             parent.onOptionMouseDown)
         btnRoll.internal = "SKILL_ROLL"
         btnRoll:initialise()
@@ -235,7 +236,7 @@ end
 ---@param frameHeight number
 ---@return ISPanel
 function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeColor, yOffset, frameHeight)
-    local skillPanel = ISPanel:new(1, yOffset, parent.width - 2, frameHeight)
+    local skillPanel = ISPanel:new(DiceCommonUI.X_MARGIN, yOffset, parent.width - DiceCommonUI.X_MARGIN*2, frameHeight)
     parent["skillPanel"..skill] = skillPanel      -- Add a reference that we can call later
 
     if not isAlternativeColor then
