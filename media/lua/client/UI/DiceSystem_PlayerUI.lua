@@ -138,7 +138,7 @@ end
 
 function DiceMenu:fillSkillsContainer()
     local yOffset = 0
-    local frameHeight = 40
+    local frameHeight = CommonUI.FRAME_HEIGHT
 
     --print("Filling skill container")
     local plUsername = getPlayer():getUsername()
@@ -303,8 +303,7 @@ function DiceMenu:update()
 end
 
 function DiceMenu:calculateHeight(y)
-    local fixedFrameHeight = 40
-    local finalheight = y + fixedFrameHeight * 8 + 25
+    local finalheight = y + CommonUI.FRAME_HEIGHT * 8 + 25
     self:setHeight(finalheight)
 end
 
@@ -401,7 +400,7 @@ function DiceMenu:createChildren()
         playerName = "ADMIN MODE - " .. playerName
     end
 
-    local frameHeight = 40 * FONT_SCALE
+    local frameHeight = CommonUI.FRAME_HEIGHT
 
 
     --* Name Label *--

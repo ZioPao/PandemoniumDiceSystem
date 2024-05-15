@@ -32,6 +32,8 @@ end
 DiceCommonUI.cachedStatusEffects = {}
 DiceCommonUI.BUTTON_WIDTH = 100
 
+DiceCommonUI.FRAME_HEIGHT = 40 * DiceCommonUI.FONT_SCALE
+
 ---Create a text panel
 ---@param parent ISPanel
 ---@param text String
@@ -233,7 +235,7 @@ end
 ---@param frameHeight number
 ---@return ISPanel
 function DiceCommonUI.CreateBaseSingleSkillPanel(parent, skill, isAlternativeColor, yOffset, frameHeight)
-    local skillPanel = ISPanel:new(0, yOffset, parent.width, frameHeight)
+    local skillPanel = ISPanel:new(1, yOffset, parent.width - 2, frameHeight)
     parent["skillPanel"..skill] = skillPanel      -- Add a reference that we can call later
 
     if not isAlternativeColor then
