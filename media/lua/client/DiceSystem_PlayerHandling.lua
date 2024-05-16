@@ -261,14 +261,10 @@ function PlayerHandler:handleArmorBonus()
     -- Set the correct amount of armor bonus
     self:setBonusStat("Armor", armorBonus)
 
-    -- We need to scale the movement accordingly
-    local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - armorBonus
-    self:setMaxMovement(maxMov)
 
     if self:isPlayerInitialized() then
         sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateArmorBonus',
             { armorBonus = armorBonus, username = self.username })
-        sendClientCommand(DICE_SYSTEM_MOD_STRING, 'UpdateMaxMovement', { maxMovement = maxMov, username = self.username })
     end
 
     return true
@@ -491,7 +487,7 @@ end
 ---Returns the max movement value + bonuses
 ---@return number
 function PlayerHandler:getTotalMovement()
-    return self:getMaxStat("Movement") + self:getMovementBonus()
+    return self:getMaxStat("Movement") + self:getMovementBonus() - self:getArmorBonus()
 end
 
 ---Get the movement bonus

@@ -212,13 +212,23 @@ function DiceMenu:updatePanelLine(name, currVal, maxVal)
 end
 
 function DiceMenu:updateBonusValues()
+
+    ---For positive values, we need to add a + character
+    ---@param val number
+    ---@return string
+    local function GetSign(val)
+        if val > 0 then return "+" else return "" end
+    end
+
     -- Armor Bonus + Movement Bonus
     local armorBonus = self.playerHandler:getArmorBonus()
-    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", armorBonus))
+    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", GetSign(armorBonus), armorBonus))
     self.panelArmorBonus.textDirty = true
 
     local movementBonus = self.playerHandler:getMovementBonus()
-    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", movementBonus))
+    local correctedMovBonus = movementBonus - armorBonus
+    --print(movementBonus)
+    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", GetSign(correctedMovBonus), correctedMovBonus))
     self.panelMovementBonus.textDirty = true
 end
 
