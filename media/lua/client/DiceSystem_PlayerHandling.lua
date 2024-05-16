@@ -220,6 +220,25 @@ end
 
 --* Special cases for stats, armor *--
 
+---Used to calculate armor bonus
+---@param player IsoPlayer
+---@return number
+---@private
+function PlayerHandler:calculateWornItemsProtection(player)
+    local wornItems = player:getWornItems()
+    local protection = 0
+    for i = 1, wornItems:size() do
+        ---@type InventoryItem
+        local item = wornItems:get(i - 1):getItem()
+        if instanceof(item, "Clothing") then
+            ---@cast item Clothing
+            protection = protection + item:getBulletDefense()
+        end
+    end
+
+    return protection
+end
+
 ---Should run ONLY on the actual client, not from admins or other players
 ---@return boolean
 function PlayerHandler:handleArmorBonus()
@@ -227,30 +246,20 @@ function PlayerHandler:handleArmorBonus()
     if self.username ~= pl:getUsername() then return false end
     if not self:checkDiceDataValidity() then return false end
 
-
-    local wornItems = pl:getWornItems()
-    local tempProtection = 0
-    for i = 1, wornItems:size() do
-        ---@type InventoryItem
-        local item = wornItems:get(i - 1):getItem()
-        if instanceof(item, "Clothing") then
-            ---@cast item Clothing
-            tempProtection = tempProtection + item:getBulletDefense()
-        end
-    end
+    local protection = self:calculateWornItemsProtection(pl)
 
     -- Calculate the armor bonus
-    local armorBonus = math.floor(tempProtection / 100)
+    local armorBonus = math.floor(protection / 100)
     if armorBonus < 0 then armorBonus = 0 end
 
     -- Hard cap it at 3
-    if armorBonus > 3 then armorBonus = 3 end
+    if armorBonus > PLAYER_DICE_VALUES.MAX_ARMOR_BONUS then armorBonus = PLAYER_DICE_VALUES.MAX_ARMOR_BONUS end
 
 
     -- TODO Cache old armor bonus before updating it
 
     -- Set the correct amount of armor bonus
-    self.diceData.armorBonus = armorBonus
+    self:setBonusStat("Armor", armorBonus)
 
     -- We need to scale the movement accordingly
     local maxMov = PLAYER_DICE_VALUES.DEFAULT_MOVEMENT - armorBonus
@@ -510,7 +519,7 @@ function PlayerHandler:setMaxMovement(maxMov)
     local movBonus = self:getMovementBonus()
 
     if self:getCurrentMovement() > maxMov + movBonus then
-        DICE_CLIENT_MOD_DATA[self.username].currentMovement = maxMov + movBonus
+        self:setCurrentMovement(maxMov + movBonus)
     end
 end
 
