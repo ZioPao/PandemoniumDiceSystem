@@ -283,4 +283,15 @@ function DiceCommonUI.UpdateBtnSkillModifier(parent, skill, enableMinus, enableP
     parent["btnPlus" .. skill]:setEnable(enablePlus)
 end
 
+
+--* VARIOUS *--
+---For positive values, we need to add a + character
+---@param val number
+---@return string
+function DiceCommonUI.GetSign(val)
+    if val > 0 then return "+" else return "" end
+end
+
+
+
 return DiceCommonUI

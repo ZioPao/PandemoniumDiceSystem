@@ -212,23 +212,15 @@ function DiceMenu:updatePanelLine(name, currVal, maxVal)
 end
 
 function DiceMenu:updateBonusValues()
-
-    ---For positive values, we need to add a + character
-    ---@param val number
-    ---@return string
-    local function GetSign(val)
-        if val > 0 then return "+" else return "" end
-    end
-
     -- Armor Bonus + Movement Bonus
     local armorBonus = self.playerHandler:getArmorBonus()
-    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", GetSign(armorBonus), armorBonus))
+    self.panelArmorBonus:setText(getText("IGUI_PlayerUI_ArmorBonus", CommonUI.GetSign(armorBonus), armorBonus))
     self.panelArmorBonus.textDirty = true
 
     local movementBonus = self.playerHandler:getMovementBonus()
     local correctedMovBonus = movementBonus - armorBonus
     --print(movementBonus)
-    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", GetSign(correctedMovBonus), correctedMovBonus))
+    self.panelMovementBonus:setText(getText("IGUI_PlayerUI_MovementBonus", CommonUI.GetSign(correctedMovBonus), correctedMovBonus))
     self.panelMovementBonus.textDirty = true
 end
 
@@ -241,13 +233,13 @@ function DiceMenu:updateSkills(allocatedPoints)
         local skillPointsString = " <RIGHT> " .. string.format("%d", skillPoints)
         if bonusSkillPoints ~= 0 then
             skillPointsString = skillPointsString ..
-                string.format(" <RGB:0.94,0.82,0.09> <SPACE> + <SPACE> %d", bonusSkillPoints)
+                string.format(" <RGB:0.94,0.82,0.09> <SPACE> %s <SPACE> %d", CommonUI.GetSign(bonusSkillPoints), bonusSkillPoints)
         end
 
         -- Account for cases such as Resolve + Armor Bonus
         local specialPoints = self.playerHandler:getSpecialSkillPoints(skill)
         if specialPoints and specialPoints ~= 0 then
-            skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> + <SPACE> %d", specialPoints)
+            skillPointsString = skillPointsString .. string.format(" <RGB:1,0,0> <SPACE> %s <SPACE> %d", CommonUI.GetSign(bonusSkillPoints), specialPoints)
         end
 
 
