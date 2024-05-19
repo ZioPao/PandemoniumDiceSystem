@@ -407,7 +407,7 @@ end
 function PlayerHandler:setOccupation(occupation)
     --DiceSystem_Common.DebugWriteLog"Setting occupation")
     --DiceSystem_Common.DebugWriteLogPlayerStatsHandler.username)
-    if self.diceData == nil then return end
+    if not self:checkDiceDataValidity() then return end
 
     --DiceSystem_Common.DebugWriteLog"Setting occupation => " .. occupation)
     self.diceData.occupation = occupation
