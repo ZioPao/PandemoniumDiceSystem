@@ -1,5 +1,13 @@
 VERSION = 1,
 
+option PandemoniumDiceSystem.UseMovButton
+{
+    type = boolean,
+    default = true,
+
+    page = PandemoniumDiceSystem,
+    translation = PandemoniumDiceSystem_UseMovButton,
+}
 
 option PandemoniumDiceSystem.ShowStatusEffects
 {

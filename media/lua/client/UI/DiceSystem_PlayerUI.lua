@@ -44,6 +44,8 @@ DiceMenu.instance = nil
 
 
 
+
+
 --- Init a new Dice Menu panel
 ---@param x number
 ---@param y number
@@ -585,6 +587,7 @@ function DiceMenu:close()
     self:removeFromUIManager()
     local tableIndex = self.plUsername .. tostring(self)
     CommonUI.RemoveCachedStatusEffectsText(tableIndex)
+    DiceMenu.instance = nil
 end
 
 ---Open the Dice Menu panel

@@ -11,3 +11,6 @@ To read more about the Pandemonium Project Zomboid RP Dice System, click [here](
 
 To join Pandemonium Project Zomboid RP, click [here](https://discord.gg/ppzrp)
 
+## Credits
+Dice icon - [Freepik (Flaticon)](https://www.flaticon.com/free-icons/d20)
+Hand Drag icon - [Pixel perfect (Flaticon)](https://www.flaticon.com/free-icons/drag)

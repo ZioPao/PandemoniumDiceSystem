@@ -1,10 +1,27 @@
 {
     "todo-tree.tree.scanMode": "workspace",
     "zomboid_user_folder": "C:/Users/picch/Zomboid",
-    "zomboid_folder": "E:\\Steam\\steamapps\\common\\ProjectZomboid",
+    "zomboid_folder": "F:\\SteamLibrary\\steamapps\\common\\ProjectZomboid41",
     "zomboid_server_folder": "E:\\Steam\\steamapps\\common\\Project Zomboid Dedicated Server",
     "Lua.diagnostics.globals": [
         "ModOptions",
         "zombie"
     ],
+    "Lua.workspace.library": [
+        "${addons}/umbrella/module/library"
+    ],
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.path": [
+        "?.lua",
+        "?/init.lua",
+        "server/?.lua"
+    ],
+    "Lua.completion.requireSeparator": "/",
+    "Lua.workspace.preloadFileSize": 800,
+    "Lua.runtime.builtin": {
+        "debug": "disable",
+        "io": "disable",
+        "package": "disable"
+    },
+    "Lua.workspace.checkThirdParty": false,
 }
