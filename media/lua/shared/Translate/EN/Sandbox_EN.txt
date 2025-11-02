@@ -1,6 +1,7 @@
 Sandbox_EN = {
     Sandbox_PandemoniumDiceSystem = "Pandemonium RP - Dice System",
 
+    Sandbox_PandemoniumDiceSystem_UseMovButton = "Use alternative moveable button",
     Sandbox_PandemoniumDiceSystem_ShowStatusEffects = "Show Status Effects",
     Sandbox_PandemoniumDiceSystem_DelayUpdateStatusEffects = "Delay between status effects updates",
     Sandbox_PandemoniumDiceSystem_RenderDistanceStatusEffects = "Status Effects Render Distance",

@@ -113,7 +113,7 @@ function DiceSystem_MovBtnPanel.OnResolutionChange()
     end
 end
 
-local function CreateMovButton()
+function DiceSystem_MovBtnPanel.CreateMovButton()
     if getPlayer():isDead() then
         return
     end
@@ -122,18 +122,10 @@ local function CreateMovButton()
     local ui = DiceSystem_MovBtnPanel:new(0, y)
     ui:initialise()
     ui:addToUIManager()
-
-
-
 end
 
--- function DEBUG_CREATE_MOV_BUTTON()
---     CreateMovButton()
--- end
-
-
+--todo test when dead 
 if SandboxVars.PandemoniumDiceSystem.UseMovButton then
-    Events.OnGameStart.Add(CreateMovButton)
+    Events.OnGameStart.Add(DiceSystem_MovBtnPanel.CreateMovButton)
     Events.OnResolutionChange.Add(DiceSystem_MovBtnPanel.OnResolutionChange)
-
 end
