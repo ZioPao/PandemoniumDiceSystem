@@ -209,6 +209,8 @@ function DiceCommonUI.AddSkillPanelButtons(parent, container, ph, skill, isEditi
         btnRoll.skill = skill
         btnRoll:setEnable(plUsername == ph.username)      -- TODO will this work here?
         container:addChild(btnRoll)
+
+        parent['roll'..skill] = btnRoll
     end
 end
 

@@ -1,5 +1,4 @@
 local StatusEffectsHandler = require("DiceSystem_StatusEffectsHandler")
-local CommonMethods = require("DiceSystem_CommonMethods")
 ----------------------
 
 ---@alias statusEffectsType {}
