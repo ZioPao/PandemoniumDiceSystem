@@ -330,7 +330,6 @@ end
 ---@param y number
 ---@param frameHeight number
 function DiceMenu:createPanelLine(name, y, frameHeight)
-    local upperName = name:upper()
     local panelId = "panel" .. name
     self[panelId] = ISRichTextPanel:new(0, y, self.width, frameHeight)
     self[panelId]:initialise()

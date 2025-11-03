@@ -60,7 +60,7 @@ end
 ---@return diceDataType
 function PlayerHandler:setupModDataTable()
     ---@type diceDataType
-    local tempTable = CommonMethods.DeepCopy(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE)
+    local tempTable = DiceSystem_Common.DeepCopy(PLAYER_DICE_VALUES.DEFAULT_MOD_TABLE)
     --DiceSystem_Common.DebugWriteLog"[DiceSystem] Initializing new player dice data")
 
     -- Setup status effects
