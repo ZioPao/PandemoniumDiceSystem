@@ -153,6 +153,7 @@ end
 
 
 --* SKILL PANEL SPECIFIC *--
+local PANEL_HEIGHT = 25
 
 ---Add the label to a single skill panel
 ---@param container ISPanel
@@ -161,7 +162,7 @@ end
 ---@param frameHeight number
 function DiceCommonUI.AddSkillPanelLabel(parent, container, skill, x, frameHeight)
     local skillString = getText("IGUI_Skill_" .. skill)
-    local label = ISLabel:new(x, frameHeight / 4, 25, skillString, 1, 1, 1, 1, UIFont.Small, true)
+    local label = ISLabel:new(x, frameHeight / 2 - PANEL_HEIGHT/2, PANEL_HEIGHT, skillString, 1, 1, 1, 1, UIFont.Small, true)
     parent["label"..skill] = label        -- Reference for later
     label:initialise()
     label:instantiate()
