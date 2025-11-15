@@ -419,6 +419,9 @@ function PlayerHandler:setOccupation(occupation)
 
     for key, bonus in pairs(bonusData) do
         self.diceData.skillsBonus[key] = bonus
+
+        -- by changing these bonus points, some values such as Health or Movement could be affected and need to be updated here too
+        self:handleSkillPointSpecialCases(key)
     end
 end
 
