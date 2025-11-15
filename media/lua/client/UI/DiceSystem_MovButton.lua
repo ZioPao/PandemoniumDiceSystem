@@ -1,3 +1,5 @@
+-- FIX SAVING POS NOT WORKING
+
 local DiceMenu = require("UI/DiceSystem_PlayerUI")
 local MOVBTN_STRING = "_MOVBUTTON"
 
@@ -119,13 +121,20 @@ function DiceSystem_MovBtnPanel.CreateMovButton()
     end
 
     local y = getCore():getScreenHeight()/2
-    local ui = DiceSystem_MovBtnPanel:new(0, y)
+    local ui = DiceSystem_MovBtnPanel:new(BUTTON_X, y)
     ui:initialise()
     ui:addToUIManager()
 end
 
---todo test when dead 
+function DiceSystem_MovBtnPanel.RemoveMovButton()
+    if DiceSystem_MovBtnPanel.instance then
+        DiceSystem_MovBtnPanel.instance:close()
+    end
+    
+end
+
 if SandboxVars.PandemoniumDiceSystem.UseMovButton then
-    Events.OnGameStart.Add(DiceSystem_MovBtnPanel.CreateMovButton)
+    Events.OnCreatePlayer.Add(DiceSystem_MovBtnPanel.CreateMovButton)
+    Events.OnPlayerDeath.Add(DiceSystem_MovBtnPanel.RemoveMovButton)
     Events.OnResolutionChange.Add(DiceSystem_MovBtnPanel.OnResolutionChange)
 end
