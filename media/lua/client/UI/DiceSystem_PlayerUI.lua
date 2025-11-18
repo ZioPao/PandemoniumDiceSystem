@@ -176,7 +176,10 @@ function DiceMenu:updateOccupationsButton()
     if self.isEditing then
         local comboOcc = self.comboOccupation
         local selectedOccupation = comboOcc:getOptionData(comboOcc.selected)
-        self.playerHandler:setOccupation(selectedOccupation)
+
+        if self.playerHandler:getOccupation() ~= selectedOccupation then
+            self.playerHandler:setOccupation(selectedOccupation)
+        end
     else
         self.comboOccupation.disabled = true
     end
