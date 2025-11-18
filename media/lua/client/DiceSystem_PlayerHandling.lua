@@ -412,16 +412,17 @@ function PlayerHandler:setOccupation(occupation)
     self.diceData.occupation = occupation
     local bonusData = PLAYER_DICE_VALUES.OCCUPATIONS_BONUS[occupation]
 
-    -- Reset diceData.skillBonus
-    for k, _ in pairs(self.diceData.skillsBonus) do
-        self.diceData.skillsBonus[k] = 0
-    end
+    -- Reset diceData.skillBonus and set new bonus
+    for skill, _ in pairs(self.diceData.skillsBonus) do
+        self.diceData.skillsBonus[skill] = 0
+        if bonusData[skill] then
+            local bonus = bonusData[skill]
+            self.diceData.skillsBonus[skill] = bonus
+        end
 
-    for key, bonus in pairs(bonusData) do
-        self.diceData.skillsBonus[key] = bonus
-
-        -- by changing these bonus points, some values such as Health or Movement could be affected and need to be updated here too
-        self:handleSkillPointSpecialCases(key)
+        -- by changing these bonus points, some values such as Health or Movement could
+        -- be affected and need to be updated here too
+        self:handleSkillPointSpecialCases(skill)
     end
 end
 
