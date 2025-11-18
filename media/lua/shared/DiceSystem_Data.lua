@@ -1,5 +1,5 @@
 DICE_SYSTEM_MOD_STRING = "PandemoniumDiceSystem"
-DICE_SYSTEM_MOD_VERSION = "1.4.1"
+DICE_SYSTEM_MOD_VERSION = "1.4.4"
 
 ---@type table<integer, { name : string, version : string}>
 DICE_SYSTEM_MOD_ADDONS = {}
